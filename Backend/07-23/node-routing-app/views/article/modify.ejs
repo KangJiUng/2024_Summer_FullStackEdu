@@ -7,5 +7,41 @@
   </head>
   <body>
     <h1>게시글 확인 및 수정/삭제 웹페이지</h1>
+    <form method="post" action="/article/modify" onSubmit="return checkForm();">
+      제목:
+      <input
+        type="text"
+        id="title"
+        name="title"
+        value="<%=article.title%>"
+      /><br />
+      내용: <br />
+      <textarea id="contents" name="contents" rows="20" style="width: 500px">
+<%=article.contents%></textarea
+      ><br />
+      게시여부:
+      <select id="display" name="display">
+        <option value="9">선택</option>
+        <option value="1">게시함</option>
+        <option value="0">게시 안함</option>
+      </select>
+      <br />
+      <input type="submit" value="수정" />
+      <input type="button" value="삭제" />
+      <input type="button" value="목록" />
+    </form>
+    <script>
+      // 클라이언트 폼 유효성 검사 함수 기능 정의
+      function checkForm() {
+        if (document.getElementById("title").value == "") {
+          alert("게시글 제목을 입력해주세요.");
+          document.getElementById("title").focus();
+          // 진행 상황 멈춤
+          return false;
+        }
+        // 서버로 폼데이터 전송
+        return true;
+      }
+    </script>
   </body>
 </html>
