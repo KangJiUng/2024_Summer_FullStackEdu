@@ -65,6 +65,20 @@ router.post("/create", function (req, res) {
   res.redirect("/article/list"); // res.redirect("http://localhost:3000/article/list"); 와 동일
 });
 
+// 게시글 삭제 처리 요청과 응답처리 라우팅메서드
+// 요청 주소: http://localhost:3000/article/delete
+// 클라이언트 요청 방식: POST 방식
+// 응답 결과: 삭제 후 목록페이지로 이동 처리
+router.post("/delete", function () {
+  // Step1: 삭제할 게시글 고유번호 추출하기
+  const articleIdx = req.body.article_id;
+
+  // Step2: DB 게시글 테이블에서 해당 게시글 번호로 단일 게시글 정보를 영구 삭제하기
+
+  // Step3: 삭제 처리 후 목록 페이지로 이동시키기
+  res.redirect("/article/list");
+});
+
 // 게시글 확인 및 수정 웹페이지 요청과 응답처리 라우팅메서드
 // 요청 주소: http://localhost:3000/article/modify?id=
 // 클라이언트 요청 방식: GET 방식
@@ -98,6 +112,38 @@ router.get("/modify", function (req, res) {
 
   // 지정된 뷰파일에 단일 게시글 데이터를 article이라는 속성명으로 전달한다.
   res.render("article/modify.ejs", { article }); // 객체의 속성명과 변수값이 동일하므로 변수명 생략
+});
+
+// ***** 라우팅 메서드 구현 시 가장 중요한 점: 와일드카드로 구현된 라우팅메서드는 모든 라우팅메서드의 최하단 위치에 구현할 것! *****
+// 기존 게시글 정보에 대해 사용자가 수정한 폼정보를 이용하여 수정 데이터를 폼에서 추출하고 추출한 수정 정보를 기반으로
+// DB에 저장되어 있던 기존 데이터를 수정처리 후에 목록페이지 이동시킬까? 말까? 결정은 우리가
+// 관리자 웹사이트의 특성상 목록페이지로 그냥 이동시켜버림
+// 요청 주소: http://localhost:3000/article/modify/1
+// 클라이언트 요청 방식: POST 방식
+// 응답 형식: 웹브라우저 주소를 목록페이지로 이동시킴. res.redirect("이동시킬 URL 주소")
+router.post("/modify/:id", function (req, res) {
+  // URL 파라미터 방식으로 데이터를 전달하는 경우, 해당 데이터를 URL에서 추출하는 방법
+  // 먼저 라우팅 주소에 와일드카드 키를 설정한다. (/modify/:id   에서 :id 가 와일드카드 키명, 앞의 주소체계 같아야함)
+
+  // Step1: 게시글 고유 번호를 추출한다. 와일드카드 키명으로 파라미터 값 추출하기
+  // 파라미터 방식으로 URL을 통해 데이터를 전달하는 경우 req.params.와일드카드 키명으로 값을 추출한다.
+  const articleIdx = req.params.id;
+
+  // Step2: 사용자가 수정한 html 요소의 수정값 추출하기
+  const title = req.body.title;
+  const contents = req.body.contents;
+  const display = req.body.display;
+
+  // Step3: DB 게시글 정보 수정을 위한 JSON 수정데이터 생성하기
+  const article = {
+    title: title,
+    contents: contents,
+    display: display,
+  };
+
+  // Step4: DB에 해당 단일 게시글에 대해 상기 수정 데이터로 데이터를 수정처리하기
+  // 수정 작업이 끝나면 목록페이지로 이동시키거나 특정 뷰파일을 보내준다. (res.render(...))
+  res.redirect("/article/list");
 });
 
 // 반드시 라우터파일의 라우터 객체를 exports로 노출해야 app.js에서 router 내의 라우팅 규칙을 실행할 수 있습니다.
