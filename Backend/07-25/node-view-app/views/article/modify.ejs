@@ -121,6 +121,8 @@
         <!--우측 콘텐츠 영역 -->
         <div class="wrapper wrapper-content">
           <form id="modifyForm" action="/article/modify" method="post">
+            <!-- html hidden 태그에 게시글 고유 번호를 저장하고 name 속성을 지정해 post로 전달 시 게시글 번호도 전달되도독 처리 -->
+            <input type="hidden" name="article_id" value="<%=article.article_id%>"/>
             <div class="ibox-content m-b-sm border-bottom">
               <div class="row">
                 <div class="col-sm-12">
@@ -169,7 +171,7 @@
 
               <div class="text-center">
                 <button type="submit" class="btn btn-primary">수정</button>
-                <button type="button" class="btn btn-danger">삭제</button>
+                <button type="button" class="btn btn-danger" id="btnDelete">삭제</button>
                 <a href="/article/list" class="btn btn-info">목록</a>
               </div>
             </div>
@@ -199,6 +201,16 @@
     <script src="https://cdn.jsdelivr.net/npm/vue@2.6.10/dist/vue.js"></script>
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 
-    <script></script>
+    <script>
+        // 웹브라우저에서 삭제 버튼 클릭 시 서버의 특정 주소 호출 전 정말 삭제할지를 물어봄
+        // 삭제 한다고하면 서버에 삭제처리 주소를 호출한다.
+        $("#btnDelete").click(function(){
+            if(confirm("삭제하시겠습니까?")) {
+                location.href="/article/delete?aid=<%=article.article_id%>"
+            } else {
+                
+            }
+        });
+    </script>
   </body>
 </html>
