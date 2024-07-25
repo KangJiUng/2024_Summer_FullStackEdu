@@ -132,4 +132,103 @@ router.post("/create", async (req, res) => {
   res.json(apiResult);
 });
 
+/*
+- 기존 단일 게시글 정보 조회 요청과 응답처리 라우팅 메서드 (**쿼리스트링 방식)
+- 호출 주소: http://localhost:3000/api/articles/?aid=1
+- 호출 방식: GET 방식
+- 응답 결과: 단일 게시글 정보 JSON 반환
+*/
+router.get("/", async (req, res) => {
+  // API 호출 결과 표준 데이터 포맷 정의
+  let apiResult = {
+    code: 200, // 처리결과 상태 코드
+    data: null, // 반환할 데이터가 있으면 여기에 전달
+    result: "", // 서버에서 프론트로 특정 메시지를 보내고 싶으면 여기에...
+  };
+
+  try {
+    // Step1: API URL 주소에서 게시글 번호를 추출한다.
+    // 쿼리스트링 방식으로 전달되는 키값은 req.query.키명으로 추출가능하다.
+    const articleIdx = req.query.aid;
+
+    // Step2: 해당 게시글 번호를 기준으로 DB 게시글 테이블에서 단일 게시글 정보를 조회한다.
+    // DB에서 조회해 온 값이 단일 게시글 정보라고 가정합니다.
+    const article = {
+      article_id: 1,
+      title: "게시글 제목1입니다.",
+      contents: "게시글1 내용입니다. - 쿼리스트링 방식",
+      display: 1,
+      view_cnt: 10,
+      ip_address: "111.111.111.111",
+      regist_id: 1,
+      regist_date: Date.now(),
+    };
+    apiResult.code = 200;
+    apiResult.data = article;
+    apiResult.result = "OK";
+  } catch (err) {
+    console.log("실제 서버 에러 확인하기:", err.message);
+
+    // 백엔드에서 에러가 난 사실을 서버에 물리적 로그 폴더를 만들고 로그.txt(.log) 파일에 기록하면
+    // 좀 더 적극적으로 서버 에러에 대해 대응이 가능합니다.
+
+    apiResult.code = 500;
+    apiResult.data = null;
+    apiResult.result = "Server Error. 관리자에게 문의하세요.";
+  }
+
+  // Step3: 단일 게시글 정보를 웹브라우저/클라이언트 응답결과물로 반환한다.
+  res.json(apiResult);
+});
+
+/*
+- 기존 단일 게시글 정보 조회 요청과 응답처리 라우팅 메서드 (**파라미터 방식)
+- 호출 주소: http://localhost:3000/api/articles/1
+- 호출 방식: GET 방식
+- 응답 결과: 단일 게시글 정보 JSON 반환
+*/
+router.get("/:aid", async (req, res) => {
+  // API 호출 결과 표준 데이터 포맷 정의
+  let apiResult = {
+    code: 200, // 처리결과 상태 코드
+    data: null, // 반환할 데이터가 있으면 여기에 전달
+    result: "", // 서버에서 프론트로 특정 메시지를 보내고 싶으면 여기에...
+  };
+
+  try {
+    // Step1: API URL 주소에서 게시글 번호를 추출한다.
+    // 파라미터 방식으로 전달되는 키값은 와일드카드(:aid) 키값을 이용해
+    // req.params.와일드카드키명으로 추출가능하다.
+    const articleIdx = req.params.aid;
+
+    // Step2: 해당 게시글 번호를 기준으로 DB 게시글 테이블에서 단일 게시글 정보를 조회한다.
+    // DB에서 조회해 온 값이 단일 게시글 정보라고 가정합니다.
+    const article = {
+      article_id: 1,
+      title: "게시글 제목1입니다.",
+      contents: "게시글1 내용입니다. - 파라미터 방식",
+      display: 1,
+      view_cnt: 10,
+      ip_address: "111.111.111.111",
+      regist_id: 1,
+      regist_date: Date.now(),
+    };
+    apiResult.code = 200;
+    apiResult.data = article;
+    apiResult.result = "OK";
+  } catch (err) {
+    console.log("실제 서버 에러 확인하기:", err.message);
+
+    // 백엔드에서 에러가 난 사실을 서버에 물리적 로그 폴더를 만들고 로그.txt(.log) 파일에 기록하면
+    // 좀 더 적극적으로 서버 에러에 대해 대응이 가능합니다.
+
+    apiResult.code = 500;
+    apiResult.data = null;
+    apiResult.result = "Server Error. 관리자에게 문의하세요.";
+  }
+
+  // Step3: 단일 게시글 정보를 웹브라우저/클라이언트 응답결과물로 반환한다.
+  res.json(apiResult);
+});
+
 module.exports = router;
