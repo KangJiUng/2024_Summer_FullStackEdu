@@ -120,7 +120,7 @@
 
         <!--우측 콘텐츠 영역 -->
         <div class="wrapper wrapper-content">
-          <form id="createForm">
+          <form id="modifyForm">
             <div class="ibox-content m-b-sm border-bottom">
               <div class="row">
                 <div class="col-sm-12">
@@ -160,7 +160,9 @@
 
               <div class="text-center">
                 <button type="submit" class="btn btn-primary">수정</button>
-                <button type="button" class="btn btn-danger">삭제</button>
+                <button type="button" id="btnDelete" class="btn btn-danger">
+                  삭제
+                </button>
                 <a href="/front/list.html" class="btn btn-info">목록</a>
               </div>
             </div>
@@ -217,7 +219,7 @@
         // JQuery AJAX GET 방식으로 특정 REST API 주소를 호출해서 데이터를 조회해온다.
         // get("백엔드 api주소", 호출결과콜백함수(호출 결과값));
         $.get(
-          `http://localhost:3000/api/articles/?aid=${articleIdx}`,
+          `http://localhost:3000/api/articles/${articleIdx}`,
           function (result) {
             console.log("백엔드 api에서 제공해준 JSON 데이터 확인:", result);
 
@@ -238,8 +240,8 @@
       // 웹페이지가 로딩 완료되면 마우스포커스를 제목입력박스에 가져다 준다. (UX 향상 기능)
       $("#title").focus();
       // 입력폼 유효성 검사 실시
-      // createForm form 태그에 onSubmit 이벤트가 발생하면 실행할 기능(유효성 검사)을 정의한다.
-      $("#createForm").submit(function () {
+      // modifyForm form 태그에 onSubmit 이벤트가 발생하면 실행할 기능(유효성 검사)을 정의한다.
+      $("#modifyForm").submit(function () {
         // 더이상 서버로 데이터를 전송하는 submit 이벤트가 발생하지 않는다.
         // 프론트엔드 개발시에만 사용
         // e.preventDefault();
@@ -258,8 +260,9 @@
           return false;
         }
 
-        // Step1: 서버로 전송할 데이터 소스 준비하기(JSON 데이터)
+        // Step1: 서버로 전송할 수정 데이터 소스 준비하기(JSON 데이터)
         var article = {
+          article_id: articleIdx,
           title: $("#title").val(),
           contents: $("#contents").val(),
           display: $("#display").val(),
@@ -267,13 +270,13 @@
 
         // JQuery AJAX POST 방식으로 클라이언트에서 서버 REST API로 데이터를 전송하는 메서드
         // post("호출주소", 전달데이터).done(콜백함수(처리결과데이터){});
-        $.post("http://localhost:3000/api/articles/create", article).done(
+        $.post("http://localhost:3000/api/articles/modify", article).done(
           function (result) {
-            console.log("신규 게시글 등록처리 결과값 확인하기:", result);
+            console.log("기존 게시글 수정처리 결과값 확인하기:", result);
 
             // 정상적으로 처리된 경우
             if (result.code == 200) {
-              alert("등록 완료");
+              alert("수정 완료");
               location.href = "/front/list.html";
             } else {
               // 서버 에러난 경우
@@ -283,6 +286,26 @@
         );
 
         return false;
+      });
+
+      // 삭제 버튼 클릭 이벤트 핸들러
+      $("#btnDelete").click(function () {
+        if (confirm("삭제하시겠습니까?")) {
+          // JQuery AJAX로 백엔드 삭제 API를 호출합니다.
+          $.get(
+            `http://localhost:3000/api/articles/delete?aid=${articleIdx}`,
+            function (result) {
+              console.log("삭제 RESTful API 호출결과값 출력:", result);
+
+              if (result.code == 200) {
+                alert("삭제 완료");
+                location.href = "/front/list.html";
+              } else {
+                alert("백엔드 API 호출 에러 발생 " + result.result);
+              }
+            }
+          );
+        }
       });
     </script>
   </body>

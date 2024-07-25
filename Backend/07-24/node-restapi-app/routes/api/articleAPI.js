@@ -182,11 +182,136 @@ router.get("/", async (req, res) => {
 });
 
 /*
+- 기존 단일 게시글 수정 처리 요청과 응답 라우팅 메서드
+- 호출 주소: http://localhost:3000/api/articles/modify
+- 호출 방식: POST 방식
+- 응답 결과: 수정 결과 JSON 반환
+*/
+router.post("/modify", async (req, res) => {
+  // API 호출 결과 표준 데이터 포맷 정의
+  let apiResult = {
+    code: 200,
+    data: null,
+    result: "",
+  };
+
+  // 백엔드 예외처리하기
+  try {
+    // Step1: 클라이언트에서 보내준 사용자 수정 json 데이터를 추출합니다.
+    // req.body.클라이언트에서 보내준 단일 게시글 json 객체의 속성명
+    const article_id = req.body.article_id; // 수정하려는 게시글 고유번호
+    const title = req.body.title; // 글 제목
+    const contents = req.body.contents; // 글 내용
+    const display = req.body.display; // 게시 여부
+
+    // Step2: 사용자가 보내준 속성만 해당 테이블의 컬럼값으로 수정합니다.
+    // DB 게시글 테이블에 수정할 JSON 단일 데이터 속성 정의
+    const article = {
+      title: title,
+      contents: contents,
+      display: display,
+      ip_address: "111.111.111.111",
+      modify_id: 1,
+      modify_date: Date.now(),
+    };
+
+    // DB 게시글 테이블에 상기 데이터를 수정합니다.
+    // 수정하면 DB에서 수정된 건수를 반환해줍니다.
+    // Step3: 수정된 건수를 data값으로 지정해주고 프론트에 수정된 건수를 전달합니다.
+
+    apiResult.code = 200;
+    apiResult.data = 1; // 실제 DB 서버에서 제공된 수정 적용 건수
+    apiResult.result = "OK";
+  } catch (err) {
+    // try{} 블록 스코프 내에서 백엔드 에러가 발생하면 catch(err) {} 블록으로 에러 내용이 전달됩니다.
+    apiResult.code = 500;
+    apiResult.data = 0;
+    apiResult.result = "Server Error. 관리자에게 문의하세요.";
+  }
+
+  // Step4: DB에 저장되고 반환된 단일 게시글 정보를 클라이언트에 반환합니다.
+  // HttpResponse 객체의 json('json데이터') 메서드는 서버에서 웹브라우저로 json 데이터를 반환합니다.
+  res.json(apiResult);
+});
+
+/*
+- 기존 단일 게시글 삭제 처리 요청과 응답 라우팅 메서드 (**GET/URL 방식)
+- 호출 주소: http://localhost:3000/api/articles/delete?aid=1
+- 호출 방식: GET 방식
+- 응답 결과: 삭제 결과 JSON 반환
+- POST 방식에 비해 덜 안전함
+*/
+router.get("/delete", async (req, res) => {
+  // API 호출 결과 표준 데이터 포맷 정의
+  let apiResult = {
+    code: 200,
+    data: null,
+    result: "",
+  };
+
+  try {
+    // Step1: URL에서 삭제하려는 게시글 번호를 조회한다.
+    var articleIdx = req.query.aid;
+
+    // Step2: DB 테이블에서 해당 게시글을 삭제처리한다.
+
+    // Step3: DB 서버에서 특정 데잍가 삭제되면 삭제 건수가 백엔드로 반환된다.
+    const deletedCount = 1;
+
+    apiResult.code = 200;
+    apiResult.data = deletedCount;
+    apiResult.result = "OK";
+  } catch (err) {
+    apiResult.code = 500;
+    apiResult.data = 0;
+    apiResult.result = "Failed. 관리자에게 문의하세요.";
+  }
+
+  res.json(apiResult);
+});
+
+/*
+- 기존 단일 게시글 삭제 처리 요청과 응답 라우팅 메서드 (**POST 방식)
+- 호출 주소: http://localhost:3000/api/articles/delete
+- 호출 방식: POST 방식
+- 응답 결과: 삭제 결과 JSON 반환
+*/
+router.post("/delete", async (req, res) => {
+  // API 호출 결과 표준 데이터 포맷 정의
+  let apiResult = {
+    code: 200,
+    data: null,
+    result: "",
+  };
+
+  try {
+    // Step1: URL에서 삭제하려는 게시글 번호를 조회한다.
+    var articleIdx = req.body.article_id;
+
+    // Step2: DB 테이블에서 해당 게시글을 삭제처리한다.
+
+    // Step3: DB 서버에서 특정 데잍가 삭제되면 삭제 건수가 백엔드로 반환된다.
+    const deletedCount = 1;
+
+    apiResult.code = 200;
+    apiResult.data = deletedCount;
+    apiResult.result = "OK";
+  } catch (err) {
+    apiResult.code = 500;
+    apiResult.data = 0;
+    apiResult.result = "Failed. 관리자에게 문의하세요.";
+  }
+
+  res.json(apiResult);
+});
+
+/*
 - 기존 단일 게시글 정보 조회 요청과 응답처리 라우팅 메서드 (**파라미터 방식)
 - 호출 주소: http://localhost:3000/api/articles/1
 - 호출 방식: GET 방식
 - 응답 결과: 단일 게시글 정보 JSON 반환
 */
+// **와일드카드를 쓰는 경우, 가장 밑에서 요청을 해야 잘못된 요청을 막을 수 있음.**
 router.get("/:aid", async (req, res) => {
   // API 호출 결과 표준 데이터 포맷 정의
   let apiResult = {
