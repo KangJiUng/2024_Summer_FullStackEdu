@@ -59,10 +59,10 @@ router.post("/create", function (req, res) {
 
 // 게시글 정보 수정 화면 요청/응답 라우팅 메서드
 // 호출 주소: http://localhost:5001/article/modify
-// 호출 방식: GET 방식
+// 호출 방식: POST 방식
 // 응답 결과: modify.ejs 뷰파일(게시글 정보 수정 웹페이지 /views/article/modify.ejs)
-router.get("/modify", async (req, res) => {
-  res.render("article/modify.ejs");
+router.post("/modify", async (req, res) => {
+  res.redirect("/article/modify");
 });
 
 /*
@@ -72,12 +72,6 @@ router.get("/modify", async (req, res) => {
 - 응답 결과: 해당 게시글을 삭제처리하고 목록페이지로 이동시킨다.
 */
 router.get("/delete", async (req, res) => {
-  // Step1:  쿼리스트링방식을 사용해 req.query.키명으로 전달된 데이터 추출
-  const articleIdx = req.query.aid;
-
-  // Step2: 데이터 삭제 처리
-
-  // Step3: 사용자 브라우저 게시글 목록 이동처리
   res.redirect("/article/list");
 });
 

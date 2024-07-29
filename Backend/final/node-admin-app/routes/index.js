@@ -11,7 +11,7 @@ router.get("/", async (req, res, next) => {
 // 호출 방식: GET 방식
 // 응답 결과: login.ejs 뷰파일 (로그인 화면 웹페이지 /views/login.ejs)
 router.get("/login", async (req, res) => {
-  res.render("login.ejs", { layout: false }, { resultMsg: "" });
+  res.render("login.ejs", { layout: false });
 });
 
 // 관리자 로그인 정보 처리 라우팅 메서드

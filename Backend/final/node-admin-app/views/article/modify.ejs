@@ -15,8 +15,7 @@
 
         <!--우측 콘텐츠 영역 -->
         <div class="wrapper wrapper-content">
-          <form id="modifyForm" action="/article/modify" method="post">
-            <input type="hidden" name="article_id" value="<%=article.article_id%>"/>
+          <form method="post" action="/article/modify">
             <div class="ibox-content m-b-sm border-bottom">
               <div class="row">
                 <div class="col-sm-12">
@@ -65,7 +64,7 @@
 
               <div class="text-center">
                 <button type="submit" class="btn btn-primary">수정</button>
-                <button type="button" class="btn btn-danger" id="btnDelete">삭제</button>
+                <a href="/article/delete" class="btn btn-danger">삭제</button>
                 <a href="/article/list" class="btn btn-info">목록</a>
               </div>
             </div>
