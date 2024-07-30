@@ -2,8 +2,11 @@
 var express = require("express");
 var router = express.Router();
 
-// moment 패키지
+// moment 패키지 참조하기
 var moment = require("moment");
+
+// 관리자 암호를 단방향암호화(해시알고리즘)하기 위해 bcryptjs 패키지 참조하기
+var bcrypt = require("bcryptjs");
 
 // ORM DB 객체 참조하기
 var db = require("../models/index");
@@ -86,17 +89,20 @@ router.post("/create", async (req, res, next) => {
   const telephone = req.body.telephone;
   const use_yn_code = req.body.use_yn_code;
 
+  // hash("사용자가 입력한 암호", 암호화강도);
+  const encryptedPassword = await bcrypt.hash(admin_password, 12);
+
   // Step2: 신규 관리자 정보 DB 저장 처리
   // 주의/중요: DB에 저장할 데이터 구조는 반드시 해당 모델의 속성명과 동일해야한다.
   // 신규 데이터 등록시 모델의 속성 중 NotNull(allowNull:false)인 속성값은 반드시 값을 등록해야합니다.
   const admin = {
-    company_code: company_code,
-    admin_id: admin_id,
-    admin_password: admin_password,
-    admin_name: admin_name,
-    email: email,
-    telephone: telephone,
-    dept_name: dept_name,
+    company_code,
+    admin_id,
+    admin_password: encryptedPassword,
+    admin_name,
+    email,
+    telephone,
+    dept_name,
     used_yn_code: use_yn_code,
     reg_date: Date.now(),
     reg_member_id: 1,

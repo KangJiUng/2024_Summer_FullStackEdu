@@ -4,6 +4,9 @@ var path = require("path");
 var cookieParser = require("cookie-parser");
 var logger = require("morgan");
 
+// 환경설정 파일 구성하기
+require("dotenv").config();
+
 var expressLayouts = require("express-ejs-layouts");
 
 // ORM DB 연결 객체 sequelize 참조
