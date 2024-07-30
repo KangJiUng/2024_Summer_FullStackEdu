@@ -11,6 +11,10 @@ var bcrypt = require("bcryptjs");
 // ORM DB 객체 참조하기
 var db = require("../models/index");
 
+// 동적 SQL 쿼리를 직접 작성해서 전달하기 위한 참조
+var sequelize = db.sequelize;
+const { QueryTypes } = sequelize;
+
 /*
 - 관리자 계정 목록 조회 웹페이지 요청과 응답처리 라우팅 메서드
 - 요청주소: http://localhost:5001/admin/list
@@ -28,7 +32,49 @@ router.get("/list", async (req, res, next) => {
   // Step1: 전체 관리자 계정목록 조회하기
   // findAll(): SELECT * FROM admin; 이라는 SQL 구문으로 ORM Framework가 내부적으로 자동 생성하여
   // DB 서버에 전달/실행되고 그 결과물이 백엔드로 반환
-  const admins = await db.Admin.findAll();
+  // const admins = await db.Admin.findAll();
+
+  // 모든 데이터 목록에서 원하는 컬럼 목록만 조회하기 및 정렬하기
+  // SELECT admin_member_id, admin_if, ... FROM admin WHERE used_yn_code = 1 ORDER BY reg_date DESC;
+  // const admins = await db.Admin.findAll({
+  //   attributes: [
+  //     "admin_member_id",
+  //     "admin_id",
+  //     "admin_name",
+  //     "email",
+  //     "company_code",
+  //     "dept_name",
+  //     "used_yn_code",
+  //     "reg_date",
+  //   ],
+  //   // where: {
+  //   //   used_yn_code: 1,
+  //   // },
+  //   order: [["reg_date", "DESC"]],
+  // });
+
+  // 예시코드: 순수 SQL 구문을 DB 서버에 전달해서 동일한 결과값 받아오기
+  let query = `SELECT admin_member_id,
+      admin_id,
+      admin_name,
+      email,
+      company_code,
+      dept_name,
+      used_yn_code,
+      reg_date 
+FROM admin
+WHERE used_yn_code = 1
+ORDER BY reg_date DESC`;
+
+  // SQL 쿼리를 직접 수행하는 구문
+  const admins = await sequelize.query(query, {
+    raw: true,
+    type: QueryTypes.SELECT,
+  });
+
+  // 예시코드: 해당 테이블의 전체 로우 건수 조회하기
+  const adminCount = await db.Admin.count();
+  console.log("관리자 테이블 전체 로우건수 조회:", adminCount);
 
   // Step2: 관리자 계정 목록 데이터 뷰파일 전달하기
   res.render("admin/list", { admins, moment, searchOption });
@@ -47,8 +93,43 @@ router.post("/list", async (req, res, next) => {
   const use_yn_code = req.body.use_yn_code;
 
   // Step2: 조회옵션으로 관리자 정보 조회하기
-  const admins = await db.Admin.findAll({
-    where: { admin_id: admin_id },
+  // const admins = await db.Admin.findAll({
+  //   where: { admin_id: admin_id },
+  // });
+
+  // 예시코드: 순수 SQL 구문을 DB 서버에 전달해서 동일한 결과값 받아오기
+  let query = `SELECT admin_member_id,
+      admin_id,
+      admin_name,
+      email,
+      company_code,
+      dept_name,
+      used_yn_code,
+      reg_date 
+FROM admin
+WHERE used_yn_code = 1`;
+
+  // 회사코드 추가 필터 조건 반영
+  if (company_code != 9) {
+    query += ` AND company_code = ${company_code}`;
+  }
+
+  // 관리자아이디 추가 필터 조건 반영
+  if (admin_id.length > 0) {
+    query += ` AND admin_id LIKE '%${admin_id}%' `;
+  }
+
+  // 사용여부 추가 필터 조건 반영
+  if (use_yn_code != 9) {
+    query += ` AND used_yn_code = ${use_yn_code}`;
+  }
+
+  query += ` ORDER BY reg_date DESC;`;
+
+  // SQL 쿼리를 직접 수행하는 구문
+  const admins = await sequelize.query(query, {
+    raw: true,
+    type: QueryTypes.SELECT,
   });
 
   // Step3: 조회옵션 기본값을 사용자가 입력/선택한 값으로 저장해서 뷰에 전달하기
@@ -94,7 +175,7 @@ router.post("/create", async (req, res, next) => {
 
   // Step2: 신규 관리자 정보 DB 저장 처리
   // 주의/중요: DB에 저장할 데이터 구조는 반드시 해당 모델의 속성명과 동일해야한다.
-  // 신규 데이터 등록시 모델의 속성 중 NotNull(allowNull:false)인 속성값은 반드시 값을 등록해야합니다.
+  // 신규 데이터 등록시 모델의 속성 중 NotNull(allowNull: false)인 속성값은 반드시 값을 등록해야합니다.
   const admin = {
     company_code,
     admin_id,

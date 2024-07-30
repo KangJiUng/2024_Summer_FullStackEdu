@@ -3,8 +3,14 @@
 var express = require("express");
 var router = express.Router();
 
+// 관리자 암호를 단방향암호화(해시알고리즘)하기 위해 bcryptjs 패키지 참조하기
+var bcrypt = require("bcryptjs");
+
 // ORM DB 객체 참조
 var db = require("../models/index");
+
+// 관리자 암호를 단방향암호화(해시알고리즘)하기 위해 bcryptjs 패키지 참조하기
+var bcrypt = require("bcryptjs");
 
 /*
 - 관리자 웹사이트 로그인 화면 요청/응답 라우팅 메서드
@@ -42,7 +48,8 @@ router.post("/login", async (req, res) => {
   // 동일한 아이디가 존재하는 경우
   if (admin) {
     // DB에 저장된 암호와 관리자가 로그인 화면에서 입력한 암호가 일치하는지 체크
-    if (admin.admin_password == admin_password) {
+    // bcrypt.compart("로그인화면에서 전달된 암호", DB에 저장된 암호화된 문자열) 메서드는 암호가 같으면 true 반환, 다르면 false 반환
+    if (bcrypt.compare(admin_password, admin.admin_password)) {
       // Step4: 아이디/암호가 일치하면 메인페이지로 이동시키고 그렇지 않으면 처리결과 DATA를 login.ejs에 전달한다.
       res.redirect("/main");
     } else {
