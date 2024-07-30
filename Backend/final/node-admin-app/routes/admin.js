@@ -118,14 +118,40 @@ router.post("/create", async (req, res, next) => {
 */
 router.post("/modify", async (req, res, next) => {
   // Step1: 사용자 수정 데이터 추출
-  // const id = req.body.id;
-  // const pw = req.body.pw;
-  // const code = req.body.code;
+  // 관리자 계정 고유번호
+  const admin_member_id = req.body.admin_member_id;
+
+  // 관리자 계정 (ex-eddy)
+  const admin_id = req.body.admin_id;
+  const admin_password = req.body.admin_password;
+  const company_code = req.body.company_code;
+  const dept_name = req.body.dept_name;
+  const admin_name = req.body.admin_name;
+  const email = req.body.email;
+  const telephone = req.body.telephone;
+  const use_yn_code = req.body.use_yn_code;
 
   // Step2: DB에 해당 관리자 계정 수정처리
+  const admin = {
+    company_code,
+    dept_name,
+    admin_name,
+    email,
+    telephone,
+    used_yn_code: use_yn_code,
+    edit_date: Date.now(),
+    edit_member_id: 1,
+  };
+
+  // DB 서버에 해당 관리자 계정 정보를 수정하고 실제 수정된 건수를 DB서버에 반환한다.
+  // update(): UPDATE admin SET ... = 0, ..... WHERE admin_member_id = 1;
+  const updatedCnt = await db.Admin.update(admin, {
+    where: {
+      admin_member_id: admin_member_id,
+    },
+  });
 
   // Step3: 수정 처리 후 목록 페이지로 이동
-
   res.redirect("/admin/list");
 });
 
@@ -136,6 +162,15 @@ router.post("/modify", async (req, res, next) => {
 - 응답결과: 기존 관리자 계정 정보 삭제 처리 후 목록 페이지 이동
 */
 router.get("/delete", async (req, res, next) => {
+  // Step1: 관리자 고유번호를 추출한다.
+  const admin_member_id = req.query.id;
+
+  // Step2: 관리자 고유번호에 해당하는 단일 관리자 정보를 삭제처리한다.
+  const deletedCnt = await db.Admin.destroy({
+    where: { admin_member_id: admin_member_id },
+  });
+
+  // Step3: 삭제 후 목록페이지로 이동한다.
   res.redirect("/admin/list");
 });
 
@@ -147,11 +182,17 @@ router.get("/delete", async (req, res, next) => {
 */
 router.get("/modify/:id", async (req, res, next) => {
   // Step1: URL에서 관리자 고유번호를 추출
+  const admin_member_id = req.params.id;
 
   // Step2: 단일 관리자 정보를 DB에서 조회
+  const admin = await db.Admin.findOne({
+    where: {
+      admin_member_id: admin_member_id,
+    },
+  });
 
   // Step3: 단일 관리자 정보를 뷰에 전달
-  res.render("admin/modify");
+  res.render("admin/modify", { admin });
 });
 
 module.exports = router;
