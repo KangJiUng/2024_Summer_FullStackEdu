@@ -14,6 +14,7 @@ const jwt = require("jsonwebtoken");
 var db = require("../models/index");
 const member = require("../models/member");
 const e = require("express");
+const { where } = require("sequelize");
 
 /*
 - 신규 회원정보 등록처리 요청과 응답 라우팅메서드
@@ -139,6 +140,48 @@ router.post("/login", async (req, res) => {
       apiResult.msg = "NotExistEmail";
     }
   } catch (err) {}
+
+  res.json(apiResult);
+});
+
+/*
+- 현재 로그인한 사용자의 상세 프로필 정보를 DB에서 조회하여 반환하는 라우팅메서드
+- 호출주소: http://localhost:5000/api/member/profile
+- 호출방식: GET 방식
+- 응답 결과: 프론트엔드에서 제공한 JWT 토큰값을 전달받아 해당 사용자 메일주소로 DB에서 조회한 결과값 반환
+*/
+router.get("/profile", async (req, res) => {
+  let apiResult = {
+    code: 400,
+    data: null,
+    msg: "",
+  };
+
+  try {
+    // Step1: 웹브라우저(헤더)에서 JWT 토큰값을 추출한다.
+    // 웹브라우저에서 전달되는 토큰값 예시: "Bearer slkfdkdjvnskfskm"
+    var token = req.headers.authorization.split("Bearer ")[1];
+
+    // Step2: JWT 토큰 문자열 내에서 인증사용자 JSON 데이터를 추출한다.
+    // jwt.verify("토큰문자열", 토큰생성시사용한 인증키값); 실행 후 토큰 내 저장된 JSON 데이터를 잔환한다.
+    var loginMemberData = await jwt.verify(token, process.env.JWT_AUTH_KEY);
+
+    // Step3: 토큰 페이로드 영역에서 추출한 현재 로그인 사용자 고유번호를 기준으로 DB에서 단일 사용자 정보를 조회한다.
+    var dbMember = await db.Member.findOne({
+      where: { member_id: loginMemberData.member_id },
+    });
+
+    dbMember.member_password = ""; // 굳이 사용자 암호값을 프론트에 전달할 필요가 없음. (보안문제)
+
+    // Step4: 단일 사용자 정보를 프론트엔드로 전달한다.
+    apiResult.code = 200;
+    apiResult.data = dbMember;
+    apiResult.msg = "OK";
+  } catch (err) {
+    apiResult.code = 400;
+    apiResult.data = null;
+    apiResult.msg = "Server Error";
+  }
 
   res.json(apiResult);
 });

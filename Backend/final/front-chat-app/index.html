@@ -2051,6 +2051,33 @@
     ></script>
 
     <script>
+      // 웹페이지가 웹브라우저에 완전 로딩 완료되는 시점에 백엔드 API를 호출하여
+      // 현재 로그인한 사용자의 프로필 정보를 조회해온다.
+      $(document).ready(function () {
+        // 웹브라우저에 저장된 토큰값을 추출한다.
+        var jwtToken = localStorage.getItem("chatMemberToken");
+
+        // index.html페이지는 반드시 로그인 후 접속이 가능하며, 로그인을 했다면 토큰값이 웹브라우저의 스토리지에 저장되었을 것이니
+        // 체크해서 없으면 로그인페이지로 이동시킨다.
+        if (jwtToken == undefined) {
+          location.href = "./login.html";
+        }
+
+        // GET 방식으로 API를 호출한다.
+        $.ajax({
+          type: "Get",
+          url: "http://localhost:5000/api/member/profile",
+          headers: { Authorization: `Bearer ${jwtToken}` },
+          dataType: "json",
+          success: function (result) {
+            console.log("프로필 정보 확인하기:", result);
+          },
+          error: function (err) {
+            console.error("백엔드 api 호출에러 발생");
+          },
+        });
+      });
+
       // 정규식 문법을 이용한 키값추출하기
       function getQueryString(keyName) {
         var results = new RegExp("[\?&]" + keyName + "=([^&#]*)").exec(
@@ -2092,30 +2119,30 @@
         // 현재 로그인 사용자 닉네임과 메시지 발송자 닉네임이 같으면 오른쪽 영역에 메시지 추가
         if (nickName == sendName) {
           msgTemplate = `<li class='chat-right'>
-									<div class="chat-text-wrapper">
-										<div class='chat-text'>
-											<p>${message}</p>
-											<div class='chat-hour read'>08:56 <span>&#10003;</span></div>
-										</div>
-									</div>
-									<div class='chat-avatar'>
-										<img src="img/user24.png" alt="Quick Chat Admin" />
-										<div class='chat-name'>${sendName}</div>
-									</div>
-								</li>`;
+      			<div class="chat-text-wrapper">
+      				<div class='chat-text'>
+      					<p>${message}</p>
+      					<div class='chat-hour read'>08:56 <span>&#10003;</span></div>
+      				</div>
+      			</div>
+      			<div class='chat-avatar'>
+      				<img src="img/user24.png" alt="Quick Chat Admin" />
+      				<div class='chat-name'>${sendName}</div>
+      			</div>
+      		</li>`;
         } else {
           msgTemplate = `<li class='chat-left'>
-									<div class='chat-avatar'>
-										<img src="img/user21.png" alt="Quick Chat Admin" />
-										<div class='chat-name'>${sendName}</div>
-									</div>
-									<div class="chat-text-wrapper">
-										<div class='chat-text'>
-											<p>${message}</p>
-											<div class='chat-hour read'>08:55 <span>&#10003;</span></div>
-										</div>
-									</div>
-								</li>`;
+      			<div class='chat-avatar'>
+      				<img src="img/user21.png" alt="Quick Chat Admin" />
+      				<div class='chat-name'>${sendName}</div>
+      			</div>
+      			<div class="chat-text-wrapper">
+      				<div class='chat-text'>
+      					<p>${message}</p>
+      					<div class='chat-hour read'>08:55 <span>&#10003;</span></div>
+      				</div>
+      			</div>
+      		</li>`;
         }
 
         // 채팅 이력에 수신 메시지 탬플릿 추가하기
