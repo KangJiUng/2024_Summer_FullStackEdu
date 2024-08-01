@@ -4,6 +4,9 @@
 var express = require("express");
 var router = express.Router();
 
+// 사용자 암호 단반향 암호화 적용을 위해 bcryptjs 참조
+var bcrypt = require("bcryptjs");
+
 // ORM DB 객체 참조하기
 var db = require("../models/index");
 const member = require("../models/member");
@@ -30,12 +33,15 @@ router.post("/entry", async (req, res) => {
     const password = req.body.password;
     const name = req.body.name;
 
+    // 사용자암호를 단방향 암호화 문자열로 변환하기
+    const encryptedPassword = await encrypt.hash(password, 12);
+
     // Step2: member 회원 테이블에 데이터를 등록한다.
     // 등록할 데이터의 구조(속성)는 member 모델의 속성명을 기준으로 작성해야한다.
-    // DB member 테이블에 저장할 신규 JSON 데이터를 생성합니다.(모델속성명기준-NotNull 확인 필요)
+    // DB member 테이블에 저장할 신규 JSON 데이터를 생성합니다.(모델 속성명 기준-NotNull 확인 필요)
     const member = {
       email,
-      member_password: password,
+      member_password: encryptedPassword,
       name,
       profile_img_path: "/img/user.png",
       entry_type_code: 0,
@@ -43,7 +49,7 @@ router.post("/entry", async (req, res) => {
       entry_date: Date.now(),
     };
 
-    // 위에 등록할 데이터가 DB member 테이블에 저장된 후 실제 서장된 회원 데이터가 다시 반환된다.
+    // 위에 등록할 데이터가 DB member 테이블에 저장된 후 실제 저장된 회원 데이터가 다시 반환된다.
     let registedMember = await db.Member.create(member);
     registedMember.member_password = ""; // 보안적 이유로 암호는 프론트엔드에 전송하지 않는다.
 
@@ -63,6 +69,31 @@ router.post("/entry", async (req, res) => {
   }
 
   // 프론트엔드에 최종 처리결과 데이터를 반환한다.
+  res.json(apiResult);
+});
+
+/*
+- 회원 로그인 데이터 처리 요청과 응답 라우팅메서드
+- 호출주소: http://localhost:5000/api/member/login
+- 호출방식: POST 방식
+- 응답 결과: 사용자 메일/암호를 체크하고 JWT 사용자 인증토큰값을 프론트엔드로 반환한다.
+*/
+router.post("/login", async (req, res) => {
+  let apiResult = {
+    code: 400,
+    data: null,
+    msg: "",
+  };
+
+  try {
+    // Step1: 프론트엔드에서 전달해주는 로그인 사용자의 메일주소/암호를 추출한다.
+    // Step2: 사용자 메일주소 존재여부를 체크한다.
+    // Step3: 사용자 암호값 일치 여부를 체크한다.
+    // Step4: 사용자 메일주소/암호가 일치하는 경우 현재 로그인 사용자의 주요 정보를 JSON 데이터로 생성한다.
+    // Step5: 인증된 사용자 JSON 데이터를 JWT 토큰 내에 담아 JWT 토큰 문자열을 생성한다.
+    // Step6: JWT 토큰 문자열 프론트엔드로 반환한다.
+  } catch (err) {}
+
   res.json(apiResult);
 });
 
