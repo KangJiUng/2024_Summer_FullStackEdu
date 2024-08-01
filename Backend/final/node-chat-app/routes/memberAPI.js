@@ -4,6 +4,10 @@
 var express = require("express");
 var router = express.Router();
 
+// ORM DB 객체 참조하기
+var db = require("../models/index");
+const member = require("../models/member");
+
 /*
 - 신규 회원정보 등록처리 요청과 응답 라우팅메서드
 - 호출주소: http://localhost:5000/api/member/entry
@@ -22,11 +26,30 @@ router.post("/entry", async (req, res) => {
   try {
     // 로직 구현-로직에 에러가 나면 catch 블록으로 에러내용이 자동전달된다.
     // Step1: 프론트엔드에서 전송해주는 회원정보데이터(JSON)를 추출한다.
-    // Step2: member 회원 테이블에 데이터를 등록한다.
-    // Step3: 등록후 반환된 실제 DB에 저장된 회원 데이터를 프론트엔드에 반환한다.
+    const email = req.body.email;
+    const password = req.body.password;
+    const name = req.body.name;
 
+    // Step2: member 회원 테이블에 데이터를 등록한다.
+    // 등록할 데이터의 구조(속성)는 member 모델의 속성명을 기준으로 작성해야한다.
+    // DB member 테이블에 저장할 신규 JSON 데이터를 생성합니다.(모델속성명기준-NotNull 확인 필요)
+    const member = {
+      email,
+      member_password: password,
+      name,
+      profile_img_path: "/img/user.png",
+      entry_type_code: 0,
+      use_state_code: 1,
+      entry_date: Date.now(),
+    };
+
+    // 위에 등록할 데이터가 DB member 테이블에 저장된 후 실제 서장된 회원 데이터가 다시 반환된다.
+    let registedMember = await db.Member.create(member);
+    registedMember.member_password = ""; // 보안적 이유로 암호는 프론트엔드에 전송하지 않는다.
+
+    // Step3: 등록후 반환된 실제 DB에 저장된 회원 데이터를 프론트엔드에 반환한다.
     apiResult.code = 200;
-    apiResult.data = {};
+    apiResult.data = registedMember;
     apiResult.msg = "OK";
   } catch (err) {
     console.log("/api/member/entry 호출 에러 발생:", err.message);
