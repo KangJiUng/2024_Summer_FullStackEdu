@@ -4,12 +4,16 @@
 var express = require("express");
 var router = express.Router();
 
-// 사용자 암호 단반향 암호화 적용을 위해 bcryptjs 참조
-var bcrypt = require("bcryptjs");
+// 사용자 암호 단반향 암호화 적용을 위한 bcryptjs 참조하기
+var encrypt = require("bcryptjs");
+
+// JWT 토큰 생성을 위한 jsonwehtoken 참조하기
+const jwt = require("jsonwebtoken");
 
 // ORM DB 객체 참조하기
 var db = require("../models/index");
 const member = require("../models/member");
+const e = require("express");
 
 /*
 - 신규 회원정보 등록처리 요청과 응답 라우팅메서드
@@ -87,11 +91,48 @@ router.post("/login", async (req, res) => {
 
   try {
     // Step1: 프론트엔드에서 전달해주는 로그인 사용자의 메일주소/암호를 추출한다.
+    const email = req.body.email;
+    const password = req.body.password;
+
     // Step2: 사용자 메일주소 존재여부를 체크한다.
-    // Step3: 사용자 암호값 일치 여부를 체크한다.
-    // Step4: 사용자 메일주소/암호가 일치하는 경우 현재 로그인 사용자의 주요 정보를 JSON 데이터로 생성한다.
-    // Step5: 인증된 사용자 JSON 데이터를 JWT 토큰 내에 담아 JWT 토큰 문자열을 생성한다.
-    // Step6: JWT 토큰 문자열 프론트엔드로 반환한다.
+    const member = await db.Member.findOne({ where: { email: email } });
+
+    if (member) {
+      // 동일 메일주소가 존재하는 경우
+      // Step3: 사용자 암호값 일치 여부를 체크한다.
+      if (encrypt.compare(password, member.member_password)) {
+        // 암호가 일치하는 경우
+        // Step4: 사용자 메일주소/암호가 일치하는 경우 현재 로그인 사용자의 주요 정보를 JSON 데이터로 생성한다.
+        const tokenJsonData = {
+          member_id: member.member_id,
+          email: member.email,
+          name: member.name,
+          profile_img_path: member.profile_img_path,
+        };
+
+        // Step5: 인증된 사용자 JSON 데이터를 JWT 토큰 내에 담아 JWT 토큰 문자열을 생성한다.
+        // jwt.sign('저장할JSON데이터', 토큰인증키, {옵션(유효기간, 발급자)})
+        const token = await jwt.sign(tokenJsonData, process.env.JWT_AUTH_KEY, {
+          expiresIn: "24H",
+          issuer: "CBNU",
+        });
+
+        // Step6: JWT 토큰 문자열 프론트엔드로 반환한다.
+        apiResult.code = 200;
+        apiResult.data = token;
+        apiResult.msg = "OK";
+      } else {
+        // 암호가 일치하지 않는 경우
+        apiResult.code = 400;
+        apiResult.data = null;
+        apiResult.msg = "IncorrectPassword";
+      }
+    } else {
+      // 메일주소가 존재하지 않는 경우 프론트엔드로 결과값 바로 반환
+      apiResult.code = 400;
+      apiResult.data = null;
+      apiResult.msg = "NotExistEmail";
+    }
   } catch (err) {}
 
   res.json(apiResult);
