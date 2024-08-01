@@ -100,7 +100,12 @@ router.post("/login", async (req, res) => {
     if (member) {
       // 동일 메일주소가 존재하는 경우
       // Step3: 사용자 암호값 일치 여부를 체크한다.
-      if (encrypt.compare(password, member.member_password)) {
+      const compareResult = await encrypt.compare(
+        password,
+        member.member_password
+      );
+
+      if (compareResult) {
         // 암호가 일치하는 경우
         // Step4: 사용자 메일주소/암호가 일치하는 경우 현재 로그인 사용자의 주요 정보를 JSON 데이터로 생성한다.
         const tokenJsonData = {
