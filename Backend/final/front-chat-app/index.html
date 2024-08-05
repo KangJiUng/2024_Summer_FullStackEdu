@@ -1364,9 +1364,14 @@
                         data-parent="#settingsAccordion"
                       >
                         <div class="account-settings-body">
+                          <!-- 현재 로그인 사용자 프로필 이미지 확인영역 -->
                           <div class="upload-profile">
                             <div class="upload-profile-image">
-                              <img src="img/user2.png" alt="Profile Image" />
+                              <img
+                                src="img/user2.png"
+                                id="profileImage"
+                                alt="Profile Image"
+                              />
                             </div>
                             <div class="field-wrapper">
                               <div class="custom-file">
@@ -1374,6 +1379,7 @@
                                   type="file"
                                   class="custom-file-input"
                                   id="uploadProfile"
+                                  name="file"
                                 />
                                 <label
                                   class="custom-file-label"
@@ -1622,7 +1628,7 @@
           <!-- Chat Container Start -->
           <div class="chat-container">
             <div class="chatContainerScroll">
-              <!-- 채팅 이력 표시 영역 -->
+              <!-- 채팅이력 표시영역 -->
               <ul id="chatHistory" class="chat-box"></ul>
             </div>
           </div>
@@ -1630,14 +1636,15 @@
 
           <!-- Chat form start -->
           <div class="chat-form">
+            <!-- 사용자 메시지 입력영역 -->
             <div class="form-group">
-              <!-- 사용자 메시지 입력 영역 -->
               <textarea
                 id="message"
                 class="form-control"
                 placeholder="Type your message here..."
               ></textarea>
             </div>
+
             <div class="chat-form-actions">
               <a href="#" class="action-icon">
                 <img src="img/emoji.svg" alt="Emoji" />
@@ -1691,7 +1698,8 @@
                 <span class="action-icon-tooltip">Attach</span>
               </a>
             </div>
-            <!-- 메시지 전송 버튼 -->
+
+            <!-- 메시지 전송버튼 -->
             <button class="btn btn-primary" id="btnSend">
               <img src="img/send1.svg" alt="Send" />
             </button>
@@ -1799,11 +1807,7 @@
                   </div>
                   <div class="field-wrapper">
                     <div class="custom-file">
-                      <input
-                        type="file"
-                        class="custom-file-input"
-                        id="uploadProfile"
-                      />
+                      <input type="file" class="custom-file-input" />
                       <label class="custom-file-label" for="uploadProfile"
                         >Group image</label
                       >
@@ -1898,11 +1902,7 @@
                   </div>
                   <div class="field-wrapper">
                     <div class="custom-file">
-                      <input
-                        type="file"
-                        class="custom-file-input"
-                        id="uploadProfile"
-                      />
+                      <input type="file" class="custom-file-input" />
                       <label class="custom-file-label" for="uploadProfile"
                         >Group image</label
                       >
@@ -2044,26 +2044,27 @@
     <!-- Main Js Required -->
     <script src="js/main.js"></script>
 
-    <!-- socket.io javascript client library 참조 -->
+    <!-- socket.io javascript client library 참조  -->
     <script
       src="https://cdn.socket.io/4.4.1/socket.io.min.js"
       crossorigin="anonymous"
     ></script>
 
     <script>
-      // 웹페이지가 웹브라우저에 완전 로딩 완료되는 시점에 백엔드 API를 호출하여
-      // 현재 로그인한 사용자의 프로필 정보를 조회해온다.
+      //웹페이지가 웹브라우저에 완전 로깅완료되는 시점에 백엔드 API를 호출해
+      //현재 로그인한 사용자의 프로필 정보를 조회해온다.
       $(document).ready(function () {
-        // 웹브라우저에 저장된 토큰값을 추출한다.
+        //웹브라우저에 저장된 토큰값을 추출한다.
         var jwtToken = localStorage.getItem("chatMemberToken");
 
-        // index.html페이지는 반드시 로그인 후 접속이 가능하며, 로그인을 했다면 토큰값이 웹브라우저의 스토리지에 저장되었을 것이니
-        // 체크해서 없으면 로그인페이지로 이동시킨다.
+        //index.html페이지는 반드시 로그인후 접속이 가능하며
+        //로그인을 했으면 토큰값이 웹브라우저에 스토로지에 저장되었을것이니까...
+        //체크해서 없으면 로그인 페이지로 안내하기
         if (jwtToken == undefined) {
           location.href = "./login.html";
         }
 
-        // GET 방식으로 API를 호출한다.
+        //get방식으로 API를 호출함..
         $.ajax({
           type: "Get",
           url: "http://localhost:5000/api/member/profile",
@@ -2074,12 +2075,13 @@
             $("#profile-name").text(result.data.name);
           },
           error: function (err) {
-            console.error("백엔드 api 호출에러 발생");
+            console.error("백엔드 API 호출에러 발생....");
           },
         });
       });
 
-      // 정규식 문법을 이용한 키값추출하기
+      //현재 URL에서(/front/modify.html?id=1) 쿼리스트링 키명으로 값을 추출하는 클라이언트 자바스크립트 함수
+      //정규식 문법을 이용한 키값추출하기
       function getQueryString(keyName) {
         var results = new RegExp("[\?&]" + keyName + "=([^&#]*)").exec(
           window.location.href
@@ -2090,64 +2092,112 @@
         return results;
       }
 
-      // 현재 웹브라우저 주소창에 URL주소에서 nickname 키값을 추출하여 전역변수 nickname 사용자 닉네임을 설정한다.
+      //현재 웹브라우저 주소창에 URL주소에서 nickname 키값을 추출하여
+      //전역변수 nickName 사용자 닉네임을 설정한다.
       var nickName = getQueryString("nickname");
 
-      // 클라이언트(웹브라우저) 서버 연결 소켓 객체 정의
-      // 서버소켓과 연결을 시도하고 연결이 완료되면 연결이 지속됩니다.
-      // io.connect("/")를 통해 서버소켓과 연결을 완료하고 서버로 메시지를 보낼 socket객체가 반환됩니다.
+      //클라이언트(웹브라우저) 서버 연결 소켓 객체 정의
+      //서버소켓과 연결을 시도하고 연결이 완료되면 연결이 지속된다.
+      //io.connect('/')를 통해 서버소켓과 연결을 완료하고
+      //서버로 메시지를 보낼 socket객체가 반환됩니다.
       var socket = io.connect("http://localhost:5000/");
 
-      // jquery에서 html요소의 id값으로 html요소를 찾습니다. $("#html요소의id값")
-      // 전송버튼이 클릭되면 서버로 사용자 메시지를 전송합니다.
+      //jquery에서 html요소의 id값으로 html요소를 찾는다 $("#html요소의id값")
+      //전송버튼이 클릭되면 서버로 사용자 메시지를 전송한다.
       $("#btnSend").click(function () {
-        // 사용자 닉네임과 메시지 입력값을 추출합니다.
+        //socket.emit('서버 이벤트 수신기명','서버로 보낼 전송데이터');
+        //사용자 닉네임 과 메시지 입력값을 추출합니다.
+        //$("#html요소의id값으로 해당요소를 검색")
         var message = $("#message").val();
 
-        // socket.emit("서버이벤트수신기명", 서버로보낼전송데이터);
         socket.emit("sendAll", nickName, message);
 
-        // 메시지 입력박스 초기화 처리
+        //메시지 입력박스 초기화처리
         $("#message").val("");
         $("#message").focus();
       });
 
-      // 서버에서 보내준 메시지를 수신하는 수신기 정의하기
-      // 클라이언트 이벤트 메시지 수신기 정의하기
+      //서버에서 보내준 메시지를 수신하는 수신기 정의하기
+      //클라이언트 이벤트 메시지 수신기 정의하기
       socket.on("broadCastAll", function (sendName, message) {
-        var msgTemplate = "";
+        console.log("서버에서 전송해준 메시지 출력:", sendName, message);
 
-        // 현재 로그인 사용자 닉네임과 메시지 발송자 닉네임이 같으면 오른쪽 영역에 메시지 추가
+        let msgTemplate = "";
+
+        //현재 로그인 사용자 닉네임과 메시지 발송자 닉네임이 같으면 오른쪽 영역에 메시시 추가
         if (nickName == sendName) {
           msgTemplate = `<li class='chat-right'>
-      			<div class="chat-text-wrapper">
-      				<div class='chat-text'>
-      					<p>${message}</p>
-      					<div class='chat-hour read'>08:56 <span>&#10003;</span></div>
-      				</div>
-      			</div>
-      			<div class='chat-avatar'>
-      				<img src="img/user24.png" alt="Quick Chat Admin" />
-      				<div class='chat-name'>${sendName}</div>
-      			</div>
-      		</li>`;
+									<div class="chat-text-wrapper">
+										<div class='chat-text'>
+											<p>${message}</p>
+											<div class='chat-hour read'>08:56 <span>&#10003;</span></div>
+										</div>
+									</div>
+									<div class='chat-avatar'>
+										<img src="img/user24.png" alt="Quick Chat Admin" />
+										<div class='chat-name'>${sendName}</div>
+									</div>
+								</li>`;
         } else {
           msgTemplate = `<li class='chat-left'>
-      			<div class='chat-avatar'>
-      				<img src="img/user21.png" alt="Quick Chat Admin" />
-      				<div class='chat-name'>${sendName}</div>
-      			</div>
-      			<div class="chat-text-wrapper">
-      				<div class='chat-text'>
-      					<p>${message}</p>
-      					<div class='chat-hour read'>08:55 <span>&#10003;</span></div>
-      				</div>
-      			</div>
-      		</li>`;
+									<div class='chat-avatar'>
+										<img src="img/user21.png" alt="Quick Chat Admin" />
+										<div class='chat-name'>${sendName}</div>
+									</div>
+									<div class="chat-text-wrapper">
+										<div class='chat-text'>
+											<p>${message}</p>
+											<div class='chat-hour read'>08:55 <span>&#10003;</span></div>
+										</div>
+									</div>
+								</li>`;
         }
 
-        // 채팅 이력에 수신 메시지 탬플릿 추가하기
+        //채팅이력에 수신 메시지 템플릿 추가하기
         $("#chatHistory").append(msgTemplate);
+      });
+
+      //파일 첨부 태그의 change이벤트가 발생하면 파일을 서버로 전송한다.
+      $("#uploadProfile").change(function (e) {
+        //폼태그를 프로그래밍적으로 구현하는 FormData객체를 생성한다.
+        var data = new FormData();
+        data.append("file", $("input[name=file]")[0].files[0]);
+
+        console.log("프론트엔드에서 전송하는 파일데이터:", data);
+
+        e.preventDefault();
+
+        //백엔드 RESTAPI주소로 파일 데이터를 전송하고 반환받습니다.
+        // $.ajax({
+        // 	data:data,
+        // 	type:'POST',
+        // 	url:'http://localhost:5000/api/member/profile/upload',
+        // 	cache:false,
+        // 	contentType:false,
+        // 	processData:false,
+        // 	success:function(result){
+        // 		console.log("파일전송결과:",result);
+        // 		return false;
+        // 	},
+        // 	error:function(err){
+        // 		console.error("파일전송에러발생:",err);
+        // 		return false;
+        // 	}
+        // });
+
+        $.ajax({
+          data: data,
+          type: "POST",
+          url: "http://localhost:5000/api/member/profile/upload",
+          cache: false,
+          contentType: false,
+          processData: false,
+          success: function (result) {
+            console.log(result);
+          },
+        });
+
+        return false;
       });
     </script>
   </body>
