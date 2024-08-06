@@ -1,9 +1,9 @@
 {
   "development": {
     "username": "root",
-    "password": "0000",
+    "password": "dnddl74123",
     "database": "edu_community",
-    "host": "127.0.0.1",
+    "host": "43.200.80.238",
     "dialect": "mysql",
     "timezone": "+09:00"
   },
@@ -17,9 +17,9 @@
   },
   "production": {
     "username": "root",
-    "password": "0000",
+    "password": "dnddl74123",
     "database": "edu_community",
-    "host": "127.0.0.1",
+    "host": "43.200.80.238",
     "dialect": "mysql",
     "timezone": "+09:00"
   }
