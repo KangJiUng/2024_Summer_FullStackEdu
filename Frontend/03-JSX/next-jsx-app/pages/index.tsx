@@ -41,6 +41,25 @@ export default function Home() {
     fontSize: "10px",
   };
 
+  // 주제 배열 데이터 생성하기
+  const topics = [
+    {
+      id: 1,
+      title: "React",
+      content: "React는 페이스북에서 개발한 UI 라이브러리입니다.",
+    },
+    {
+      id: 2,
+      title: "Angular",
+      content: "Angular는 구글에서 개발한 웹 UI 프레임워크입니다.",
+    },
+    {
+      id: 3,
+      title: "Next.js",
+      content: "Next.js는 버벨에서 개발한 웹 풀스택 개발 프레임워크입니다.",
+    },
+  ];
+
   return (
     // 최상위 태그는 반드시 하나(<></> or <div></div> or <Fragment></Fragment>)
     <Fragment>
@@ -103,7 +122,7 @@ export default function Home() {
           />
         </div>
 
-        {/* jsx에서 인라인으로 스타일(css)을 적용하려면 객체로 정의해야하고 - 는 못씀 */}
+        {/* jsx에서 인라인으로 스타일(css)을 적용하려면 객체로 정의해야하고 케밥스타일 대신 카멜 써야함 */}
         <div style={{ color: "white", backgroundColor: "gray" }}>
           즐거운 React Next.js 코딩되세요. <br />
           JSX 스타일링 방법을 배워봅시다.
@@ -111,23 +130,31 @@ export default function Home() {
 
         <br />
 
+        {/* 직접적으로 스타일 정의하는 방법-인라인 스타일 */}
         <div style={myStyle}>JSX 스타일링 방법을 배워봅시다.1</div>
+
+        {/* 클래스로 정의된 공통 스타일 적용 방법 */}
         <div className={styles.sample1}>JSX 스타일링 방법을 배워봅시다.2</div>
+        <div className="sample2">
+          JSX 스타일링 방법을 배워봅시다.3 - 전역 클래스 스타일 적용
+        </div>
 
         <div className={styles.grid}>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <h2>
-              Docs <span>-&gt;</span>
-            </h2>
-            <p>
-              Find in-depth information about Next.js features and&nbsp;API.
-            </p>
-          </a>
+          {/* 동적으로 배열 아이템 수만큼 JSX 요소를 생성합니다. */}
+          {topics.map((topic, index) => (
+            <a
+              href="#"
+              className={styles.card}
+              target="_blank"
+              rel="noopener noreferrer"
+              key={index}
+            >
+              <h2>
+                {topic.title} <span>-&gt;</span>
+              </h2>
+              <p>{topic.content}</p>
+            </a>
+          ))}
 
           <a
             href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
