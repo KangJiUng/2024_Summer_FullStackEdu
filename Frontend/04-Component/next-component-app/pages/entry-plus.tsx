@@ -4,6 +4,7 @@ import { Field, Label, Switch } from "@headlessui/react";
 
 // 상태관리 훅 참조하기
 import React, { use, useState } from "react";
+import { text } from "stream/consumers";
 
 // 멤버 type alias 정의
 type MemberType = {
@@ -45,7 +46,46 @@ const EntryPlus = () => {
   // 참조형 데이터(객체, 배열)의 변경은 반드시 참조형 데이터의 복사본을 생성한 뒤 해당 복사본의 속성을 변경해야합니다.
   const handleMemberInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     // ...member: 해당 객체(member)의 복사본을 만든다는 의미이며 복사본의 해당 UI요소의 name값을 이용해 객체속성의 값을 변경한다.
+    // member 객체의 실제 복사본 객체를 만들고 복사본 객체의 특정속성["속성명"] 을 지정하고 값을 변경한 후
+    // 복사본을 setMember() 함수의 값으로 전달하여 멤버 객체값을 변경한다.
+    console.log(
+      "onChange 이벤트가 발생한 UI 요소의 name 특성값:",
+      e.target.name
+    );
+    console.log(
+      "onChange 이벤트가 발생한 UI 요소의 value 특성값:",
+      e.target.value
+    );
+
     setMember({ ...member, [e.target.name]: e.target.value });
+  };
+
+  // select 요소에 대한 onChange 이벤트 핸들러 정의하기
+  const handleTelephoneTypeChange = (
+    e: React.ChangeEvent<HTMLSelectElement>
+  ) => {
+    // 복사본 객체의 telephoneType 속성값을 변경해서 최종 변경된 복사본 객체를 setMember() 함수의 인자값으로 전달함
+    setMember({ ...member, telephoneType: Number(e.target.value) });
+    // setMember({ ...member, [e.target.name]: Number(e.target.value) });
+  };
+
+  const handleIntrodutionChange = (
+    e: React.ChangeEvent<HTMLTextAreaElement>
+  ) => {
+    setMember({ ...member, introduction: e.target.value });
+  };
+
+  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // 체크박스 요소의 체크여부(불린형) 값을 가져와서 상태값으로 변경하기
+    setMember({ ...member, agree: Boolean(e.target.checked) });
+  };
+
+  // 가입신청 버튼 클릭시 onSubmit 이벤트 핸들러 함수 정의
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    // 백엔드 API에 member state 객체를 바로 전달하기
+    console.log("백엔드로 전달할 회원가입 데이터:", member);
   };
 
   return (
@@ -84,8 +124,8 @@ const EntryPlus = () => {
                 id="name"
                 name="name"
                 type="text"
-                value={name}
-                onChange={handleNameChange}
+                value={member.name}
+                onChange={handleMemberInputChange}
                 autoComplete="given-name"
                 className="block w-full rounded-md border-0 px-3.5 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
               />
@@ -103,9 +143,9 @@ const EntryPlus = () => {
                 id="password"
                 name="password"
                 type="password"
-                value={password}
+                value={member.password}
                 // onChange={(e) => setPassword(e.target.value)}
-                onChange={handlePasswordChange}
+                onChange={handleMemberInputChange}
                 autoComplete="family-name"
                 className="block w-full rounded-md border-0 px-3.5 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
               />
@@ -124,8 +164,8 @@ const EntryPlus = () => {
                 id="email"
                 name="email"
                 type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={member.email}
+                onChange={handleMemberInputChange}
                 autoComplete="email"
                 className="block w-full rounded-md border-0 px-3.5 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
               />
@@ -146,7 +186,7 @@ const EntryPlus = () => {
                 <select
                   id="telephonetype"
                   name="telephonetype"
-                  value={telephonetype}
+                  value={member.telephoneType}
                   onChange={handleTelephoneTypeChange}
                   className="h-full rounded-md border-0 bg-transparent bg-none py-0 pl-4 pr-9 text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm"
                 >
@@ -163,8 +203,8 @@ const EntryPlus = () => {
                 id="telephone"
                 name="telephone"
                 type="tel"
-                value={telephone}
-                onChange={(e) => setTelephone(e.target.value)}
+                value={member.telephone}
+                onChange={handleMemberInputChange}
                 autoComplete="tel"
                 className="block w-full rounded-md border-0 px-3.5 py-2 pl-31 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
               />
@@ -181,7 +221,7 @@ const EntryPlus = () => {
               <textarea
                 id="introduction"
                 name="introduction"
-                value={introduction}
+                value={member.introduction}
                 onChange={handleIntrodutionChange}
                 rows={4}
                 className="block w-full rounded-md border-0 px-3.5 py-2 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
@@ -201,7 +241,7 @@ const EntryPlus = () => {
                 type="checkbox"
                 id="agreed"
                 name="agreed"
-                checked={agree}
+                checked={member.agree}
                 onChange={handleCheckboxChange}
               />
             </div>
