@@ -1,6 +1,5 @@
 import Footer from "@/components/footer";
 import Header from "@/components/header";
-import Image from "next/image";
 
 const callouts = [
   {
@@ -34,7 +33,6 @@ const callouts = [
 const Home = () => {
   return (
     <>
-      <Header></Header>
       {/* 메인 상단 컨텐츠 영역  */}
       <div className="relative isolate px-6 pt-14 lg:px-8">
         <div
@@ -127,8 +125,6 @@ const Home = () => {
           </div>
         </div>
       </div>
-
-      <Footer></Footer>
     </>
   );
 };

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Dialog, DialogPanel } from "@headlessui/react";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 
-//Link/Image 컴포넌트 참조하기
+// Link/Image 컴포넌트 참조하기
 import Link from "next/link";
 import Image from "next/image";
 
@@ -14,7 +14,7 @@ const navigation = [
 ];
 
 const Header = () => {
-  //모바일 메뉴바 오픈 상태값 관리
+  // 모바일 메뉴바 오픈 상태값 관리
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (

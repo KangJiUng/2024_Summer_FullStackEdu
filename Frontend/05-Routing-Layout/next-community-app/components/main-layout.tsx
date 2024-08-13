@@ -1,5 +1,5 @@
 import Header from "@/components/header";
-// import Container from "@/components/container";
+import Container from "@/components/container";
 import Footer from "@/components/footer";
 
 type MainLayoutProps = {
