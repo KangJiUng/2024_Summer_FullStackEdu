@@ -45,7 +45,7 @@ router.post("/entry", async (req, res) => {
   };
 
   try {
-    //로직 구현-로직이 에러가나면 catch블럭으로 에러내용이 자동전달됩닏.
+    //로직 구현-로직이 에러가나면 catch블럭으로 에러내용이 자동전달됩니다.
 
     //Step1: 프론트엔드에서 전송해주는 회원정보(json)데이터를 추출한다.
     const email = req.body.email;
@@ -80,8 +80,7 @@ router.post("/entry", async (req, res) => {
     console.log("/api/member/entry 호출에러발생:", err.message);
 
     //중요: 백엔드의 구체적인 에러내용을 프론트엔드로 전송하는것은 바로 사직서를 동일하다.(보안적위험제공)
-    //왜?? DB등록처리시 먼저 DB서버를 연결하는데 DB연결실패하면 연결에러메시지를 제공하는데 이런정보내에 보안적으로 공유하면 안되는
-    //정보들이 존재합니다.
+    //왜?? DB등록처리시 먼저 DB서버를 연결하는데 DB연결실패하면 연결에러메시지를 제공하는데 이런정보내에 보안적으로 공유하면 안되는 정보들이 존재합니다.
     apiResult.code = 500;
     apiResult.data = null;
     apiResult.msg = "Failed";
