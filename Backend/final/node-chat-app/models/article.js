@@ -12,7 +12,7 @@ module.exports = function (sequelize, DataTypes) {
       board_type_code: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        comment: "게시판고유번호 1:공지사항게시판,2:일반사용자 게시판",
+        comment: "게시판고유번호 1:공지사항게시판, 2:일반사용자 게시판",
       },
       title: {
         type: DataTypes.STRING(200),
@@ -22,7 +22,7 @@ module.exports = function (sequelize, DataTypes) {
       article_type_code: {
         type: DataTypes.TINYINT,
         allowNull: false,
-        comment: "게시글유형코드 0:일반게시글 1:상단고정게시글",
+        comment: "게시글유형코드 0:일반게시글, 1:상단고정게시글",
       },
       contents: {
         type: DataTypes.TEXT,
@@ -42,7 +42,7 @@ module.exports = function (sequelize, DataTypes) {
       is_display_code: {
         type: DataTypes.TINYINT,
         allowNull: false,
-        comment: "게시여부 0:게시안함 1:게시함",
+        comment: "게시여부 0:게시안함, 1:게시함",
       },
       reg_date: {
         type: DataTypes.DATE,

@@ -15,6 +15,7 @@ var db = require("../models/index");
 
 //파일업로드를 위한 multer객체 참조하기
 var multer = require("multer");
+const { where } = require("sequelize");
 
 //파일저장위치 지정
 var storage = multer.diskStorage({
@@ -51,6 +52,18 @@ router.post("/entry", async (req, res) => {
     const email = req.body.email;
     const password = req.body.password;
     const name = req.body.name;
+
+    // Step1-1: 신규회원 메일주소 중복검사 처리하기
+    const existMember = await db.Member.findOne({ where: { email: email } });
+
+    // 동일한 메일주소 사용자가 있는 경우 에러처리 데이터 반환
+    if (existMember) {
+      apiResult.code = 400;
+      apiResult.data = null;
+      apiResult.msg = "Exist Member";
+
+      return res.json(apiResult);
+    }
 
     //사용자암호를 단방향 암호화 문자열로 변환하기
     const encryptedPassword = await encrypt.hash(password, 12);
@@ -147,7 +160,7 @@ router.post("/login", async (req, res) => {
         //암호가 틀린경우
         apiResult.code = 400;
         apiResult.data = null;
-        apiResult.msg = "InCorrectPasword";
+        apiResult.msg = "InCorrectPassword";
       }
     } else {
       //메일주소가 존재하지 않은경우 프론트엔드로 결과값 바로 반환
