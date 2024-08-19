@@ -1,6 +1,9 @@
 var express = require("express");
 var router = express.Router();
 
+// jsonwebtoken 참조하기
+var jwt = require("jsonwebtoken");
+
 //ORM db객체 참조하기
 var db = require("../models/index");
 
@@ -65,6 +68,13 @@ router.post("/create", async (req, res) => {
   };
 
   try {
+    // Step0: 프론트엔드에서 전달된 JWT 토큰값에서 로그인 사용자 정보 추출하기
+    var token = req.headers.authorization.split("Bearer ")[1];
+    console.log("게시글 등록 api token:", token);
+
+    // 사용자 토큰정보 유효성 검사 후 정상적이면 토큰 내에 사용자인증 json데이터 반환
+    var loginMember = await jwt.verify(token, process.env.JWT_AUTH_KEY);
+
     // Step1: 프론트엔드에서 전달한 데이터 추출하기
     const title = req.body.title;
     const contents = req.body.contents;
@@ -83,7 +93,7 @@ router.post("/create", async (req, res) => {
         req.headers["x-forwarded-for"] || req.connection.remoteAddress, // 로컬개발환경인 경우 ::1 와 같이 ip주소가 추출된다.
       is_display_code: display,
       reg_date: Date.now(),
-      reg_member_id: 1, // 추후 토큰에서 사용자 정보 추출하기
+      reg_member_id: loginMember.member_id, // 토큰내 사용자 인증 데이터에서 사용자고유번호추출
     };
 
     // Step3: db article 테이블에 신규 게시글 정보 등록처리
