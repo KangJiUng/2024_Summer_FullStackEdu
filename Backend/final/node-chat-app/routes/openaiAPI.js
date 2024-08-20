@@ -82,7 +82,7 @@ router.post("/dalle", async (req, res) => {
         req.headers["x-forwarded-for"] || req.connection.remoteAddress,
       is_display_code: 1,
       reg_date: Date.now(),
-      reg_member_id: 1, // 추후 jwt 토큰에서 사용자 고유번호 추출하여 처리
+      reg_member_id: 10, // 추후 jwt 토큰에서 사용자 고유번호 추출하여 처리
     };
 
     // 신규 등록된 게시글 정보를 반환받기
@@ -102,11 +102,23 @@ router.post("/dalle", async (req, res) => {
     };
 
     // Step5: DB 게시글 테이블에 사용자 이미지 생성요청 정보 등록 처리하기
-    await db.ArticleFile.create(articleFile);
+    const file = await db.ArticleFile.create(articleFile);
+
+    // 단일 생성 이미지 파일 정보 생성하기
+    const fileData = {
+      article_id: registedArticle.article_id,
+      file_id: file.article_file_id,
+      title: registedArticle.title,
+      contents: registedArticle.contents,
+      file_path: file.file_path,
+      file_name: file.file_name,
+      reg_member_id: 10,
+      reg_member_name: "강지웅",
+    };
 
     // Step6: 최종 생성된 이미지 정보를 프론트엔드로 반환하기
     apiResult.code = 200;
-    apiResult.data = imageFullPath;
+    apiResult.data = fileData;
     apiResult.msg = "OK";
   } catch (err) {
     apiResult.code = 500;
@@ -142,7 +154,8 @@ F.file_name,
 F.file_path,
 M.name as reg_member_name
 FROM article A INNER JOIN article_file F ON A.article_id = F.article_id
-INNER JOIN member M ON A.reg_member_id = M.member_id;`;
+INNER JOIN member M ON A.reg_member_id = M.member_id
+WHERE A.board_type_code = 3;`;
 
     // sql쿼리를 직접 수행하는 구문
     const blogFiles = await sequelize.query(query, {
