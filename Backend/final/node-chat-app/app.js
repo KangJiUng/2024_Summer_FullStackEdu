@@ -21,6 +21,8 @@ var memberAPIRouter = require("./routes/memberAPI");
 
 var articleAPIRouter = require("./routes/articleAPI");
 
+var openaiAPIRouter = require("./routes/openaiAPI");
+
 var app = express();
 
 //mysql과 자동연결처리 및 모델기반 물리 테이블 생성처리제공
@@ -54,6 +56,8 @@ app.use("/users", usersRouter);
 app.use("/api/member", memberAPIRouter);
 
 app.use("/api/article", articleAPIRouter);
+
+app.use("/api/openai", openaiAPIRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

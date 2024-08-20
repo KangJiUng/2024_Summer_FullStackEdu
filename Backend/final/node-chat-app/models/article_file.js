@@ -12,7 +12,7 @@ module.exports = function (sequelize, DataTypes) {
       article_id: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        comment: "참조하는 게시글고유번호:FK",
+        comment: "참조하는 게시글고유번호: FK",
       },
       file_name: {
         type: DataTypes.STRING(100),
@@ -27,7 +27,7 @@ module.exports = function (sequelize, DataTypes) {
       file_path: {
         type: DataTypes.STRING(200),
         allowNull: true,
-        comment: "전체 파일링크정보(도메인포함또는 미포함)",
+        comment: "전체 파일링크정보(도메인포함 또는 미포함)",
       },
       file_type: {
         type: DataTypes.STRING(50),

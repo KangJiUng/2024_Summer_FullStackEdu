@@ -12,7 +12,8 @@ module.exports = function (sequelize, DataTypes) {
       board_type_code: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        comment: "게시판고유번호 1:공지사항게시판, 2:일반사용자 게시판",
+        comment:
+          "게시판고유번호 1:공지사항게시판, 2:일반사용자 게시판, 3:AI이미지요청정보",
       },
       title: {
         type: DataTypes.STRING(200),
