@@ -4,6 +4,10 @@ var router = express.Router();
 // db객체 참조하기
 var db = require("../models/index");
 
+// 동적 SQL쿼리를 직접 작성해서 전달하기 위한 참조
+var sequelize = db.sequelize;
+const { QueryTypes } = sequelize;
+
 // OpenAI API 호출을 위한 axios 패키지 참조하기
 const axios = require("axios");
 
@@ -70,7 +74,8 @@ router.post("/dalle", async (req, res) => {
     // Step4: 최종 생성된 이미지 데이터 추출하기
     const article = {
       board_type_code: 3,
-      title: prompt,
+      title: model,
+      contents: prompt,
       article_type_code: 0,
       view_count: 0,
       ip_address:
@@ -110,6 +115,50 @@ router.post("/dalle", async (req, res) => {
   }
 
   // 최종 처리결과값을 프론트엔드로 반환합니다.
+  res.json(apiResult);
+});
+
+/*
+-이전에 생성된 이미지 목록정보 조회 요청 및 응답처리 API 라우팅 메서드
+-호출주소: http://localhost:5000/api/openai/all
+-호출방식: GET
+-응답결과: 게시판 유형이 3(생성형 이미지정보)인 게시글/파일 정보 조회 및 반환
+*/
+router.get("/all", async (req, res) => {
+  let apiResult = {
+    code: 400,
+    data: null,
+    msg: "",
+  };
+
+  try {
+    const query = `SELECT 
+A.article_id,
+A.title,
+A.contents,
+A.reg_member_id,
+F.article_file_id as file_id,
+F.file_name,
+F.file_path,
+M.name as reg_member_name
+FROM article A INNER JOIN article_file F ON A.article_id = F.article_id
+INNER JOIN member M ON A.reg_member_id = M.member_id;`;
+
+    // sql쿼리를 직접 수행하는 구문
+    const blogFiles = await sequelize.query(query, {
+      raw: true,
+      type: QueryTypes.SELECT,
+    });
+
+    apiResult.code = 200;
+    apiResult.data = blogFiles;
+    apiResult.msg = "OK";
+  } catch (err) {
+    apiResult.code = 500;
+    apiResult.data = null;
+    apiResult.msg = "Failed";
+  }
+
   res.json(apiResult);
 });
 
