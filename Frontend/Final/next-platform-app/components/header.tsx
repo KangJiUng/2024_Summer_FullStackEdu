@@ -2,14 +2,12 @@ import { useState } from "react";
 import { Dialog, DialogPanel } from "@headlessui/react";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 
-//Link/Image 컴포넌트 참조하기
+//Link 컴포넌트 참조하기
 import Link from "next/link";
-import Image from "next/image";
-
 const navigation = [
   { name: "Blog", href: "/blogs" },
   { name: "Gallery", href: "/gallery" },
-  { name: "Chat", href: "/chat" },
+  { name: "Chat", href: "/chat/list" },
   { name: "Bot", href: "/bot" },
 ];
 

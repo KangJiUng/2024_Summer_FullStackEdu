@@ -167,10 +167,44 @@ WHERE A.board_type_code = 3;`;
 -응답결과: ChatGPT 응답 메시지결과
 */
 router.post("/gpt", async (req, res) => {
-  // Step1: 프론트엔드에서 사용자 질문 프롬프트를 추출하기
-  // Step2: ChatGPT API 호출하기
-  // Step3: ChatGPT 응답 메시지 추출하기
-  // Step4: ChatGPT 응답 메시지 반환하기
+  let apiResult = {
+    code: 400,
+    data: null,
+    msg: "",
+  };
+
+  try {
+    // Step1: 프론트엔드에서 전달해준 사용자 메시지 데이터 추출하기
+    const prompt = req.body.prompt;
+
+    // Step2: OpenAI ChatGPT REST API 호출하기
+    const response = await axios.post(
+      "https://api.openai.com/v1/chat/completions",
+      {
+        model: "gpt-4o", // 지원 LLM 모델명: gpt-3.5-turbo, gpt-4, gpt-4o, gpt-4o-mini
+        messages: [{ role: "user", content: prompt }],
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+        },
+      }
+    );
+
+    // Step3: ChatGPT 응답메시지 반환받기
+    const gptMessage = response.data.choices[0].message.content;
+
+    apiResult.code = 200;
+    apiResult.data = gptMessage;
+    apiResult.msg = "OK";
+  } catch (err) {
+    apiResult.code = 500;
+    apiResult.data = null;
+    apiResult.msg = "Failed";
+  }
+
+  res.json(apiResult);
 });
 
 module.exports = router;

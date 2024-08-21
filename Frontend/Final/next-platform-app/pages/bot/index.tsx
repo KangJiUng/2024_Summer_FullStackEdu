@@ -54,8 +54,8 @@ const Bot = () => {
 
     // 개발자정의 클라이언트 소켓 이벤트 수신기 정의하기
     // socket.on("클라이언트 이벤트 수신기명", 서버에서 전달해준 데이터);
-    socket.on("receiveAll", function (msg: IMessage) {
-      console.log("서버소켓에서 전달된 데이터 확인-receiveAll:", msg);
+    socket.on("gptMessage", function (msg: IMessage) {
+      console.log("서버소켓에서 전달된 데이터 확인-gptMessage:", msg);
       setMessageList((prev) => [...prev, msg]);
     });
 
@@ -82,7 +82,7 @@ const Bot = () => {
     };
 
     // 채팅서버소켓으로 메시지 전송하기
-    socket.emit("broadcast", msgData);
+    socket.emit("gpt", msgData);
 
     // 메시지 입력박스 초기화
     setMessage("");

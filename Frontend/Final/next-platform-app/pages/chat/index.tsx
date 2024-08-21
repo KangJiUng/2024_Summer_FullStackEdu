@@ -1,17 +1,26 @@
 // 사용자간 기초 채팅기능구현 컴포넌트
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { useRouter } from "next/router";
 import { IMessage } from "@/interfaces/message";
 
 // 채팅 클라이언트 socket 객체 참조하기
 import { socket } from "@/library/socket";
 
+// 전역 컨텍스트 참조하기
+import { GlobalContext } from "@/library/globalContext";
+
 const Chat = () => {
   // 라우터 객체 생성
   const router = useRouter();
 
-  // 현재 사용자 고유번호 상태값 정의
-  const [memberId, setMemberId] = useState<number>(1);
+  // 전역 상태값에서 로그인한 사용자의 정보 조회를 위한 컨텍스트 객체 생성
+  const { globalData, setGlobalData } = useContext(GlobalContext);
+
+  // 사용자 인증토큰정보 관리 상태값 정의하기
+  const [memberToken, setMemberToken] = useState<string>("");
+
+  // 현재 접속 채널 상태값 정의하기
+  const [channel, setChannel] = useState<number>(0);
 
   // 채팅 메시지 입력 요소 바인딩 텍스트 상태값 정의
   const [message, setMessage] = useState<string>("");
@@ -45,19 +54,38 @@ const Chat = () => {
   // useEffect 훅에서 useRouter 훅을 이용하여 URL 키값이 추출안되는 문제는 useRouter.isReady 값을 이용하여 해결 가능
   // useRouter.isReady 값의 기본은 false -> true로 변경되는 시점에 관련 기능 구현하면 된다.
   useEffect(() => {
-    console.log("현재 URL 주소에서 사용자 고유번호 추출하기:", router.query.id);
+    console.log("현재 URL 주소에서 채널번호 추출하기:", router.query.cid);
 
     // URL 주소를 통해 사용자 고유번호가 전달된 경우에만 실행
-    if (router.query.id != undefined) {
-      // 현재 사용자 고유번호 상태값 설정
-      setMemberId(Number(router.query.id));
+    if (router.query.cid != undefined) {
+      // 현재 채널 고유번호 상태값 설정
+      setChannel(Number(router.query.cid));
     }
   }, [router.isReady]);
+
+  // 현재 접속 채널 정보가 변경될 때마다 실행되는 useEffect 함수
+  // 채널번호가 바뀌면 바뀐 번호 채널의 채팅방에 입장 처리
+  useEffect(() => {
+    // 채팅방 입장처리
+    console.log("채팅방 채널이 변경되었습니다.", channel);
+
+    if (channel > 0) {
+    }
+  }, [channel]);
 
   // 최초 1회 화면이 렌더링(마운팅)되는 시점에 실행되는 useEffect 함수
   // 프로젝트 루트에 next.config.mjs 파일내 reactStrictMode 값을 false로 변경해야 정확히 1회만 실행
   // 채팅 서버와 연결되는 클라이언트 채팅 소켓 객체 생성 및 각종 채팅 이벤트 기능 구현 영역
   useEffect(() => {
+    // 웹브라우저 저장소에 저장된 서버에서 발급해준 JWT 사용자인증정보 토큰 추출
+    const token = localStorage.getItem("token");
+
+    if (token == undefined) {
+      router.push("/login");
+    }
+
+    setMemberToken(token as string);
+
     // 최초 화면이 렌더링되는 시점에 서버소켓 연결
     socket.connect();
 
@@ -66,10 +94,12 @@ const Chat = () => {
     // 소켓 시스템 이벤트
     socket.on("connect", () => {
       console.log("정상적으로 서버소켓과 연결되었습니다.");
+
+      // 사용자 채팅방에 입장하기 처리
     });
 
     // disconnect 이벤트는 서버소켓이 끊어진 경우 발생하는 이벤트
-    // 서버와의 연결소켓이 끊어진경우 처리할 기능을 핸들러함수에서 처리
+    // 서버와의 연결소켓이 끊어진 경우 처리할 기능을 핸들러함수에서 처리
     // 소켓 시스템 이벤트
     socket.on("disconnect", () => {
       console.log("서버소켓 연결이 종료되었습니다.");
@@ -97,9 +127,9 @@ const Chat = () => {
     // 채팅서버소켓으로 메시지를 전송합니다.
     // socket.emit("서버 이벤트수신기명", 전달할 데이터);
     const msgData = {
-      member_id: memberId,
-      name: `사용자-${memberId.toString()}`,
-      profile: `http://localhost:5000/img/user${memberId.toString()}.png`,
+      member_id: globalData.member.member_id,
+      name: globalData.member.name,
+      profile: `http://localhost:5000/img/user${globalData.member.member_id.toString()}.png`,
       message: message,
       send_date: Date.now().toString(),
     };
@@ -121,7 +151,7 @@ const Chat = () => {
               <div className="flex flex-col h-full">
                 <div className="grid grid-cols-12 gap-y-2">
                   {messageList.map((msg, index) =>
-                    msg.member_id === memberId ? (
+                    msg.member_id === globalData.member.member_id ? (
                       <div
                         key={index}
                         className="col-start-6 col-end-13 p-3 rounded-lg"
