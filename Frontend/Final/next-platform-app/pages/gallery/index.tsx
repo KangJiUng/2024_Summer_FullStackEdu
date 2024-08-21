@@ -45,6 +45,10 @@ const Gallery = () => {
     console.log("백엔드에서 전달해준 결과값 확인:", resultData);
 
     await getBlogFiles();
+
+    // 이미지 생성 후 프롬프트 및 모델 선택값 초기화처리
+    setPrompt("");
+    setModel("dall-e-3");
   };
 
   return (
