@@ -43,33 +43,18 @@ router.post("/dalle", async (req, res) => {
       n: 1, // 이미지 생성개수(dalle2는 최대 10개, dalle3는 1개)
       size: "1024x1024", // dalle2는 256x258, 512x512, 1024x1024 지원, dalle3는 1024x1024, 1792x1024, 1024x1792 지원)
       style: "vivid", // 기본값: vivid, natural: dalle3만 지원, 더 자연스럽고 초현실적인 이미지 생성
-      response_format: "url", // url: openai 사이트에 생성된 이미지 풀주소 경로 반환, b64_json: 바이너리 데이터 형식으로 반환
+      response_format: "b64_json", // url: openai 사이트에 생성된 이미지 풀주소 경로 반환, b64_json: 바이너리 데이터 형식으로 반환
     });
 
     // Step3: Dalle API 호출결과에서 물리적 이미지 생성 및 서버 공간에 저장하기
-    // url 방식으로 이미지생성값을 반환받는 경우는 최대 1시간 이후에 openai 이미지 서버에서 해당 이미지가 삭제됨
-    // 해당 이미지가 영구적으로 필요하면 반환된 url 주소를 이용해 이미지를 백엔드에 생성하면 됨
-    const imageURL = response.data[0].url;
-    console.log("dalle 이미지 생성 URL경로:", imageURL);
-
     // 이미지 경로를 이용해 물리적 이미지 파일 생성하기
     const imgFileName = `sample-${Date.now()}.png`;
     const imgFilePath = `./public/ai/${imgFileName}`;
 
-    axios({ url: imageURL, responseType: "stream" })
-      .then((response) => {
-        response.data
-          .pipe(fs.createWriteStream(imgFilePath))
-          .on("finish", () => {
-            console.log("image saved successfully.");
-          })
-          .on("error", (err) => {
-            console.error("error saving image:", err);
-          });
-      })
-      .catch((err) => {
-        console.error("error downloading image:", err);
-      });
+    // 이미지 생성 요청에 대한 응답값으로 이미지 바이너리 데이터로 반환 후 서버에 이미지 파일 생성하기
+    const imageBinaryData = response.data[0].b64_json;
+    const buffer = Buffer.from(imageBinaryData, "base64");
+    fs.writeFileSync(imgFilePath, buffer);
 
     // Step4: 최종 생성된 이미지 데이터 추출하기
     const article = {
@@ -173,6 +158,19 @@ WHERE A.board_type_code = 3;`;
   }
 
   res.json(apiResult);
+});
+
+/*
+-ChatGPT-4o 기반 질의/응답처리 API 라우팅 메서드
+-호출주소: http://localhost:5000/api/openai/gpt
+-호출방식: POST
+-응답결과: ChatGPT 응답 메시지결과
+*/
+router.post("/gpt", async (req, res) => {
+  // Step1: 프론트엔드에서 사용자 질문 프롬프트를 추출하기
+  // Step2: ChatGPT API 호출하기
+  // Step3: ChatGPT 응답 메시지 추출하기
+  // Step4: ChatGPT 응답 메시지 반환하기
 });
 
 module.exports = router;
