@@ -4,6 +4,23 @@
 // socket.io 패키지 참조
 const SocketIO = require("socket.io");
 
+// db객체 참조하기
+var db = require("./models/index");
+
+// 동적 SQL쿼리를 직접 작성해서 전달하기 위한 참조
+var sequelize = db.sequelize;
+const { QueryTypes } = sequelize;
+
+// OpenAI API 호출을 위한 axiosa 패키지 참조하기
+const axios = require("axios");
+
+// 파일처리를 위한 filesystem 내장객체 참조하기
+const fs = require("fs");
+
+// OpenAI 객체 생성하기
+const { OpenAI } = require("openai");
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
 // socket.js 모듈 기능정의
 module.exports = (server) => {
   // 서버 소켓의 입출력(In/Out) 메시지 처리 객체 io 생성
@@ -22,6 +39,7 @@ module.exports = (server) => {
   // 자바스크립트에서 on(이벤트핸들러(처리))
   // io 객체에 connection 이벤트가 발생하면 콜백함수를 실행해라.
   // connection 이벤트는 웹브라우저와 서버소켓과 연결이 완료되면 발생합니다.
+  // socket 객체는 개별 사용자/그룹사용자 단위의 메시지 처리를 담당하는 객체입니다.
   io.on("connection", (socket) => {
     // socket: 현재 연결된 사용자(웹브라우저)와 서버소켓간 연결 객체
     // 웹브라우저에서 서버소켓에 broadcast 이벤트 수신기를 호출하면 관련 콜백함수가 실행됩니다.
@@ -83,6 +101,39 @@ module.exports = (server) => {
 
       // 현재 퇴장하는 사용자한테도 메시지 전송
       socket.emit("exitOk", `채팅방을 퇴장하셨습니다.`);
+    });
+
+    // ChatGPT-4o와의 질문하고 답하기처리 실시간 이벤트 수신기 정의
+    // 프론트엔드 소켓에서 호출하는 gpt 서버 이벤트 수신기 정의
+    socket.on("gpt", async (msg) => {
+      // Step0: 사용자가 보내준 메시지데이터를 다시 현재 사용자에게 발송해 화면에 표시하기
+      // socket.emit("gptMessage", msg); : 현재 메시지를 보내온 사용자에게만 서버에서 메시지 발송하기
+      socket.emit("gptMessage", msg);
+
+      // Step1: 프론트엔드 소켓에서 전달해준 메시지 데이터 추출하기-prompt
+      const prompt = msg.message;
+
+      // Step2: OpenAI ChatGPT REST API 호출하기
+      const response = await axios.post(
+        "https://api.openai.com/v1/chat/completions",
+        {
+          model: "gpt-4o", // 지원 LLM 모델명: gpt-3.5-turbo, gpt-4, gpt-4o,
+          messages: [{ role: "user", content: prompt }],
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+          },
+        }
+      );
+
+      // Step3: ChatGPT 응답메시지 반환받기
+      const gptMessage = response.data.choices[0].message.content;
+
+      // Step4: 프론트엔드 소켓으로 GPT응답메시지 데이터 전송하기
+      msg.message = gptMessage;
+      socket.emit("gptMessage", msg);
     });
   });
 };

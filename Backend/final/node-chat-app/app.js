@@ -7,6 +7,9 @@ var logger = require("morgan");
 // 환경설정정보 구성
 require("dotenv").config();
 
+//웹 서버소켓 모듈참조
+const webSocket = require("./socket");
+
 // 시퀄라이즈 ORM을 이용해 DB서버와 연결작업 진행
 var sequelize = require("./models/index.js").sequelize;
 
@@ -76,7 +79,10 @@ app.use(function (err, req, res, next) {
 });
 
 // 노드 앱의 기본 WAS 서비스 포트
-app.set("port", process.env.PORT || 5001);
+app.set("port", process.env.PORT || 5000);
 
 // 노드앱이 작동되는 서버 객체 생성
 var server = app.listen(app.get("port"), function () {});
+
+//웹소켓 express서버와 연결처리
+webSocket(server);
