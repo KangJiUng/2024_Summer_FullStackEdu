@@ -8,3 +8,8 @@ export enum UserType {
   USER = "User",
   BOT = "Bot",
 }
+
+export interface ISendMessage {
+  role: string;
+  message: string;
+}
