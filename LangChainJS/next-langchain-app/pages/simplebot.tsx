@@ -6,32 +6,31 @@ const SimpleBot = () => {
   const [message, setMessage] = useState<string>("");
 
   // 챗봇과의 채팅이력 상태값 목록 정의 및 초기화
-  const [messageList, setMessageList] = useState<IMessage[]>([
-    {
-      user_type: UserType.USER,
-      message: "좋은 아침이야",
-      send_date: new Date().toString(),
-    },
-    {
-      user_type: UserType.BOT,
-      message: "무엇을 도와드릴까요?",
-      send_date: new Date().toString(),
-    },
-  ]);
+  const [messageList, setMessageList] = useState<IMessage[]>([]);
 
   // 메시지 전송 버튼 클릭시 메시지 백엔드 API 전송하기
   const messageSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    const response = await fetch("", {
+    const userMessage: IMessage = {
+      user_type: UserType.USER,
+      message: message,
+      send_date: Date.now().toString(),
+    };
+
+    // 백엔드로 사용자 입력메시지를 전송하기 전에 사용자 메시지를 메시지목록에 추가하여 화면에 사용자 입력 정보를 출력한다.
+    // 왜? 여기서? 현재 WebSocket 기반 실시간 통신이 아니어서 백엔드는 두 번의 응답을 받을 수 없기 때문
+    setMessageList((prev) => [...prev, userMessage]);
+
+    const response = await fetch("/api/bot/simplebot", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ message }),
     });
 
     if (response.status === 200) {
-      const data = await response.json();
-      setMessageList((prev) => [...prev, data.message]);
+      const result = await response.json();
+      setMessageList((prev) => [...prev, result.data]);
       setMessage("");
     }
   };
