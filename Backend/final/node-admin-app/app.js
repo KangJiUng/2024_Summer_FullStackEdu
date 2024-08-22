@@ -7,9 +7,6 @@ var logger = require("morgan");
 //환경설정파일 구성하기
 require("dotenv").config();
 
-// 웹소켓 모듈 추가
-const webSocket = require("./socket");
-
 //서버 세션 객체 관리 패키지 참조하기
 var session = require("express-session");
 
@@ -87,13 +84,4 @@ app.use(function (err, req, res, next) {
   res.render("error");
 });
 
-// 노드 앱의 기본 WAS 서비스 포트
-app.set("port", process.env.PORT || 5000);
-
-// 노드앱이 작동되는 서버 객체 생성
-var server = app.listen(app.get("port"), function () {});
-
-// 웹소켓 express 서버와 연결처리
-// webSocket모듈에 nodeapp이 실행되는 서버 객체를 전달합니다.
-// socket.io 소켓 모듈과 node express앱을 통합해줍니다.
-webSocket(server);
+module.exports = app;

@@ -46,7 +46,7 @@ const Login = () => {
         localStorage.setItem("token", result.data.token);
 
         // 로그인한 사용자 정보를 전역상태의 member 속성값으로 변경저장하기
-        setGlobalData({ ...globalData, member: result.data.member });
+        setGlobalData(result.data.member);
 
         // Step2: 추후 Context API의 전역데이터로 사용자 정보 저장
 
