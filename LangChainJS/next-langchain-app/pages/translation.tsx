@@ -4,7 +4,7 @@ import { IMessage, UserType, ISendMessage } from "@/interfaces/message";
 const Translation = () => {
   // 사용자입력 채팅 메시지 상태값 정의 및 초기화
   const [message, setMessage] = useState<ISendMessage>({
-    role: "",
+    role: "사용자 메시지를 영어로 번역해주세요.",
     message: "",
   });
 
@@ -48,7 +48,7 @@ const Translation = () => {
             type="text"
             name="role"
             value={message.role}
-            placeholder="챗봇의 역할(목적)을 지정해주세요."
+            // placeholder="챗봇의 역할(목적)을 지정해주세요."
             onChange={(e) => {
               setMessage({ ...message, role: e.target.value });
             }}

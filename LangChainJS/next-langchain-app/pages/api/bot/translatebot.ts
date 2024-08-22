@@ -56,25 +56,29 @@ export default async function handler(
 
       // Case1: ChatPromptTemplate를 이용한 프롬프트 전달하기
       // 프롬프트 템플릿이란? LLM에게 전달할 수 있는 다양한 질문 템플릿을 제공함으로써 보다 효율적인 질문 형식을 만들어 LLM에게 제공하여 좋은 답변을 만들 방식 제공
-      // // 의도: 좋은 질문이 좋은 답변을 만든다.
-      const PromptTemplate = ChatPromptTemplate.fromMessages([
-        ["system", role],
-        ["user", "{input}"],
-      ]);
+      // 의도: 좋은 질문이 좋은 답변을 만든다.
+      //   const PromptTemplate = ChatPromptTemplate.fromMessages([
+      //     ["system", role],
+      //     ["user", "{input}"],
+      //   ]);
 
       // template.pipe(LLM모델) : chain 객체 반환(chain은 처리할 작업의 기본 단위)
       // chain(처리할작업)을 여러 개 생성하고 chain을 연결하여 로직을 구현하는 방식이 'LangChain'이다!
-      const chain = PromptTemplate.pipe(llm);
-      const result = await chain.invoke({ input: prompt });
+      //   const chain = PromptTemplate.pipe(llm);
+      //   const result = await chain.invoke({ input: prompt });
 
-      // Case2: (미션)Systemp, Human Message를 이용한 LLM 호출을 구현해주세요.
+      // Case2: (미션)System, Human Message를 이용한 LLM 호출을 구현해주세요.
+      const messages = [new SystemMessage(role), new HumanMessage(prompt)];
+      // const result = await llm.invoke(messages);
 
-      // Case3: (미션)StringOutputParser를 이용한 결과물 파싱처리 코드를 작성해주세요.
+      const parser = new StringOutputParser();
+      const chain = llm.pipe(parser);
+      const resultMessage = await chain.invoke(messages);
 
       // 메시지 처리결과 데이터
       const resultMsg: IMessage = {
         user_type: UserType.BOT,
-        message: result.content as string,
+        message: resultMessage,
         send_date: Date.now().toString(),
       };
 
