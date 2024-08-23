@@ -1,29 +1,29 @@
-//메시지 서버 소켓파일입니다.
-//해당 socket.js 모듈이 메시징 서버 역할을 제공합니다.
+// 메시지 서버 소켓파일입니다.
+// 해당 socket.js 모듈이 메시징 서버 역할을 제공합니다.
 
-//socket.io 팩키지 참조
+// socket.io 팩키지 참조
 const SocketIO = require("socket.io");
 
-//db객체 참조하기
+// db객체 참조하기
 var db = require("./models/index");
 
-//동적 SQL쿼리를 직접 작성해서 전달하기 위한 참조
+// 동적 SQL쿼리를 직접 작성해서 전달하기 위한 참조
 var sequelize = db.sequelize;
 const { QueryTypes } = sequelize;
 
-//OpenAI API 호출을 위한 axios 패키지 참조하기
+// OpenAI API 호출을 위한 axios 패키지 참조하기
 const axios = require("axios");
 
-//파일처리를 위한 filesystem 내장객체 참조하기
+// 파일처리를 위한 filesystem 내장객체 참조하기
 const fs = require("fs");
 
-//OpenAI 객체 생성하기
+// OpenAI 객체 생성하기
 const { OpenAI } = require("openai");
 const openai = new OpenAI({
   apikey: process.env.OPENAI_API_KEY,
 });
 
-//socket.js모듈 기능정의
+// socket.js모듈 기능정의
 module.exports = (server) => {
   //서버 소켓의 입출력(In/Out) 메시지 처리 객체 io 생성
   //input 메시지는 웹브라우저에서 들어오는 메시지
