@@ -1,7 +1,7 @@
 export interface IMessage {
   user_type: UserType;
   message: string;
-  send_date: string;
+  send_date: Date;
 }
 
 export enum UserType {
@@ -12,4 +12,9 @@ export enum UserType {
 export interface ISendMessage {
   role: string;
   message: string;
+}
+
+// 대화이력챗봇 전용 메시지 타입 정의: 기본 메시지타입을 상속받아 기능확장
+export interface IMemberMessage extends IMessage {
+  nick_name: string;
 }

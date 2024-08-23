@@ -49,7 +49,7 @@ export default async function handler(
 
       // Step2: LLM 모델 생성하기
       const llm = new ChatOpenAI({
-        model: "gpt-4o"
+        model: "gpt-4o",
         apiKey: process.env.OPENAI_API_KEY,
       });
 
@@ -97,7 +97,7 @@ export default async function handler(
       const resultMsg: IMessage = {
         user_type: UserType.BOT,
         message: resultMessage,
-        send_date: Date.now().toString(),
+        send_date: new Date(),
       };
 
       // 메시지 처리결과 데이터

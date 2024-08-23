@@ -15,7 +15,7 @@ const SimpleBot = () => {
     const userMessage: IMessage = {
       user_type: UserType.USER,
       message: message,
-      send_date: Date.now().toString(),
+      send_date: new Date(),
     };
 
     // 백엔드로 사용자 입력메시지를 전송하기 전에 사용자 메시지를 메시지목록에 추가하여 화면에 사용자 입력 정보를 출력한다.
