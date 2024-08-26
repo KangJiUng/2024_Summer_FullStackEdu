@@ -19,6 +19,8 @@ const fs = require("fs");
 
 //OpenAI 객체 생성하기
 const { OpenAI } = require("openai");
+const { where } = require("sequelize");
+const member = require("./models/member");
 const openai = new OpenAI({
   apikey: process.env.OPENAI_API_KEY,
 });
@@ -45,9 +47,52 @@ module.exports = (server) => {
   //connection 이벤트는 웹브라우저와 서버소켓과 연결이 완료되면 발생합니다.
   //socket객체는 개별 사용자/그룹사용자 단위의 메시지 처리를 담당하는 객체..
   io.on("connection", (socket) => {
+    const req = socket.request;
+
+    // 웹소켓서버에 접속한 사용자 ip 조회하기
+    const userIP =
+      req.headers["x-forwarded-for"] ||
+      req.connection.remoteAddress.replace("::ffff", "");
+
+    // 웹소켓 아이디 = CONNECTION ID 추출하기
+    const socketId = socket.id;
+
+    // 클라이언트 소켓이 비정상적으로 서버소켓과 끊어진 경우를 인지하여 해당 사용자의 연결 정보를 갱신할 수 있다.
+    // 비정상적인 소켓 끊김이 발생하는 경우: 웹브라우저/모바일앱을 닫고 나가거나 네트워크가 끊기거나...
+    socket.on("disconnect", async () => {
+      // 사용자 연결 끊김처리 필요
+      await UserDisConnectionOut();
+    });
+
+    // 비정상 연결 끊김 사용자 정보 처리
+    async function UserDisConnectionOut() {
+      // 현재 웹소켓이 끊긴 사용자 정보화
+      let exitUser = await db.ChannelMember.findOne({
+        where: { connection_id: socketId, active_state_code: 1 },
+      });
+
+      if (exitUser != null) {
+        var msg = {
+          channel_id: exitUser.channel,
+          member_id: exitUser.member_id,
+          nick_name: exitUser.nick_name,
+          msg_type_code: 0, // 퇴장메시지
+          connection_id: socketId,
+          message: exitUser.nick_name + " 사용자가 퇴장했습니다.",
+          ip_address: userIP,
+          msg_state_code: 1,
+          msg_date: Date.now(),
+        };
+      }
+
+      await db.ChannelMsg.create(msg);
+
+      // ...
+    }
+
     //socket은 현재 연결된 사용자(웹브라우저) 서버소켓간 연결 객체
     //웹브라우저에서 서버소켓에 broadcast라는 이벤트 수신기를 호출하면 관련 콜백함수가 실행된다.
-    //socket.on("서버소켓 이벤트 수신기명",처리할콜백함수):
+    //socket.on("서버소켓 이벤트 수신기명", 처리할콜백함수):
 
     //웹브라우저(클라이언트/프론트엔드)에서 서버소켓에 broadcast라는 이벤트를 호출하면
     //서버소켓에서 클라이언트에서 보내준 메시지를 수신하고 콜백함수를 통해
@@ -76,6 +121,53 @@ module.exports = (server) => {
 
       //현재 접속자를 제외한 해당 채널에 이미 접속한 모든사용자에게 메시지를 발송한다.
       //socket.to('채널명').emit();
+
+      var chatUser = await db.ChannelMember.findOne({
+        where: { channel_id: channel, member_id: member.member_Id },
+      });
+
+      // 현재 채널에 접속한 사용자 정보가 없으면 등록, 있으면 접속정보 갱신
+      if (chatUser == null) {
+        var entryMember = {
+          channel_id: channel,
+          member_id: member.member_Id,
+          nick_name: member.name,
+          member_type_code: 0,
+          active_state_code: 1,
+          last_contact_date: Date.now(),
+          connection_id: socketId,
+          ip_address: userIP,
+          edit_date: Date.now(),
+          edit_member: member.member_Id,
+        };
+        chatUser = await db.ChannelMember.create(entryMember);
+      } else {
+        var updateMember = {
+          active_state_code: 1,
+          last_contact_date: Date.now(),
+          connection_id: socketId,
+          ip_address: userIP,
+          edit_date: Date.now(),
+          edit_member: member.member_Id,
+        };
+        await db.ChannelMember.update(updateMember, {
+          where: { channel_id: channel, member_id: member.member_Id },
+        });
+      }
+
+      var msg = {
+        channel_id: channel,
+        member_id: msgData.member_id,
+        nick_name: msgData.name,
+        msg_type_code: 1, // 입장메시지
+        connection_id: socketId,
+        message: msgData.name + " 님이 입장했습니다.",
+        ip_address: userIP,
+        msg_state_code: 1,
+        msg_date: Date.now(),
+      };
+
+      await db.ChannelMsg.create(msg);
 
       socket.to(channel).emit("entryOk", {
         member_id: member.member_id,
@@ -107,6 +199,20 @@ module.exports = (server) => {
         message: msgData.message,
         send_date: Date.now(),
       };
+
+      var msg = {
+        channel_id: channel,
+        member_id: msgData.member_id,
+        nick_name: msgData.name,
+        msg_type_code: 2, // 일반사용자메시지
+        connection_id: socketId,
+        message: msgData.message,
+        ip_address: userIP,
+        msg_state_code: 1,
+        msg_date: Date.now(),
+      };
+
+      await db.ChannelMsg.create(msg);
 
       //io.to('채널명').emit()는 현재채널에
       //메시지를 보낸 당사자(나를) 포함한 현재 채널 모든 접속자(사용자)에게 메시지 보내기
